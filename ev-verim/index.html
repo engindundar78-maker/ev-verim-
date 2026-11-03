@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EV Verim">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>EV Verim</title>
+<style>
+:root{--bg:#0b1020;--card:#151c33;--line:#26304f;--tx:#e8ecf8;--mut:#8b95b5;--acc:#4da3ff;--ok:#3ddc97;--warn:#ffb648;--bad:#ff5d6c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,system-ui,Segoe UI,Roboto,sans-serif}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(70px + env(safe-area-inset-bottom)) env(safe-area-inset-left)}
+header{padding:14px 16px 6px;display:flex;justify-content:space-between;align-items:baseline}
+header h1{font-size:20px;margin:0}
+header small{color:var(--mut)}
+main{padding:0 12px}
+section{display:none}section.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+.card h2{font-size:15px;margin:0 0 10px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+label{display:block;font-size:13px;color:var(--mut);margin:8px 0 4px}
+input,select{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0e1428;color:var(--tx);font-size:16px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+button{padding:13px 14px;border:0;border-radius:11px;background:var(--acc);color:#fff;font-size:16px;font-weight:600;width:100%;margin-top:10px}
+button.sec{background:#26304f}button.bad{background:var(--bad);color:#fff}button.ok{background:#1f8f63;color:#fff}
+button:disabled{opacity:.5}
+.list button{margin-top:6px;text-align:left;font-weight:400;background:#1c2442}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 4px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}
+th{color:var(--mut);font-weight:500}
+tr.best td{color:var(--ok);font-weight:700}
+.big{font-size:44px;font-weight:700;line-height:1}
+.mid{font-size:24px;font-weight:700}
+.mut{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:#0e1428;border-radius:12px;padding:12px}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:#0e1428;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav a{flex:1;text-align:center;padding:12px 0 14px;color:var(--mut);text-decoration:none;font-size:13px}
+nav a.on{color:var(--acc);font-weight:700}
+.soc-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.soc-btns button{margin:0;padding:14px 0;background:#26304f}
+#msg{position:fixed;left:12px;right:12px;bottom:calc(80px + env(safe-area-inset-bottom));background:#26304f;padding:12px;border-radius:12px;display:none;z-index:9}
+canvas{width:100%;height:150px;display:block}
+.stop{border-left:3px solid var(--warn);padding:6px 10px;margin:8px 0;background:#0e1428;border-radius:8px}
+</style>
+</head>
+<body>
+<header><h1>EV Verim</h1><small id="carName"></small></header>
+<main>
+
+<section id="plan" class="on">
+  <div class="card">
+    <h2>Rota</h2>
+    <label>Başlangıç</label>
+    <div class="row"><input id="from" placeholder="Şehir/adres veya boş = mevcut konum"><button class="sec" style="flex:0 0 64px;margin:0" id="gpsFrom">📍</button></div>
+    <div class="list" id="fromList"></div>
+    <label>Varış</label>
+    <input id="to" placeholder="ör. Ankara Kızılay">
+    <div class="list" id="toList"></div>
+    <div class="row">
+      <div><label>Başlangıç şarj %</label><input id="startSoc" type="number" inputmode="numeric" value="100"></div>
+      <div><label>Min. rezerv %</label><input id="reserve" type="number" inputmode="numeric" value="10"></div>
+    </div>
+    <button id="planBtn">Rotayı hesapla</button>
+    <div class="mut" id="planStatus" style="margin-top:8px"></div>
+  </div>
+
+  <div class="card" id="resultCard" style="display:none">
+    <h2>Hız karşılaştırması</h2>
+    <div class="mut" id="routeInfo"></div>
+    <table id="speedTable"></table>
+    <div class="mut" style="margin-top:6px">Toplam = sürüş + şarj + durak başı 5 dk. Yeşil satır en kısa toplam süre.</div>
+  </div>
+
+  <div class="card" id="stopsCard" style="display:none">
+    <h2>Önerilen plan</h2>
+    <div class="row"><select id="planSpeed"></select></div>
+    <div id="stopsList"></div>
+    <canvas id="profile" width="800" height="300"></canvas>
+    <div class="mut">Mavi: şarj %, gri: yükselti</div>
+    <button class="ok" id="goDrive">Bu planla sürüşü başlat</button>
+  </div>
+</section>
+
+<section id="drive">
+  <div class="card">
+    <h2>Anlık</h2>
+    <div class="grid">
+      <div class="kpi"><div class="mut">Hız</div><div class="big" id="dSpeed">–</div><div class="mut">km/s</div></div>
+      <div class="kpi"><div class="mut">Tahmini varış şarjı</div><div class="big" id="dArr">–</div><div class="mut" id="dArrNote">mevcut hızla</div></div>
+      <div class="kpi"><div class="mut">Kalan yol</div><div class="mid" id="dRem">–</div></div>
+      <div class="kpi"><div class="mut">Önerilen hız</div><div class="mid" id="dRec">–</div></div>
+    </div>
+    <div class="mut" id="dNext" style="margin-top:10px"></div>
+    <div class="mut" id="dGps" style="margin-top:6px"></div>
+  </div>
+  <div class="card">
+    <h2>Göstergedeki şarj %</h2>
+    <div class="row"><input id="socIn" type="number" inputmode="numeric" placeholder="%"><button style="flex:0 0 110px;margin:0" id="socSave">Kaydet</button></div>
+    <div class="soc-btns" style="margin-top:8px" id="socQuick"></div>
+    <div class="mut" style="margin-top:8px" id="socInfo">Ara ara göstergedeki yüzdeyi girin; model kendini buna göre düzeltir.</div>
+  </div>
+  <div class="card">
+    <h2>Senaryolar (kalan yol)</h2>
+    <table id="liveTable"></table>
+  </div>
+  <div class="row">
+    <button id="startTrip">Sürüşü başlat</button>
+    <button class="bad" id="stopTrip" disabled>Bitir</button>
+  </div>
+</section>
+
+<section id="logs">
+  <div class="card">
+    <h2>Kayıtlı sürüşler</h2>
+    <div id="tripList" class="mut">Henüz kayıt yok.</div>
+  </div>
+</section>
+
+<section id="settings">
+  <div class="card">
+    <h2>Araç</h2>
+    <div class="grid" id="carForm"></div>
+    <button id="saveCar">Kaydet</button>
+    <button class="sec" id="resetCar">Varsayılana dön</button>
+    <div class="mut" style="margin-top:8px">Uygulama araca hiçbir komut göndermez; yalnızca telefon GPS'i, harita/hava verisi ve sizin girdiğiniz şarj yüzdesini kullanır.</div>
+  </div>
+  <div class="card">
+    <h2>Veri kaynakları</h2>
+    <div class="mut">Rota: OSRM · Yükselti & hava: Open-Meteo · Adres & şarj istasyonları: OpenStreetMap (Nominatim/Overpass). Tümü ücretsiz, anahtar gerekmez.</div>
+  </div>
+</section>
+
+</main>
+<div id="msg"></div>
+<nav>
+  <a href="#plan" data-t="plan" class="on">Plan</a>
+  <a href="#drive" data-t="drive">Sürüş</a>
+  <a href="#logs" data-t="logs">Kayıtlar</a>
+  <a href="#settings" data-t="settings">Ayarlar</a>
+</nav>
+<script src="energy.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

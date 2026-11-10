@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#121211">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Balık Tut">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>Engin Balık Tut</title>
+<style>
+:root{--bg:#121211;--s1:#1a1a19;--s2:#242422;--line:#383835;--t1:#f0efec;--t2:#c3c2b7;--t3:#8f8e86;
+--good:#0ca30c;--warn:#fab219;--ser:#ec835a;--crit:#d03b3b;
+--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--t1);font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(8px + var(--sat)) 14px 8px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
+.brand{font-weight:700;font-size:17px;white-space:nowrap}
+.sub{color:var(--t3);font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+main{padding:10px 10px calc(78px + var(--sab));max-width:780px;margin:0 auto}
+.tab{display:none}.tab.active{display:block}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.h{font-weight:650;font-size:14.5px;margin-bottom:8px}
+.muted{color:var(--t3);font-size:12.5px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--s2);color:var(--t2);border-radius:999px;padding:6px 11px;font-size:13px;cursor:pointer}
+.chip.on{background:#1f3350;border-color:#3987e5;color:var(--t1)}
+.chip .sw{margin-right:6px}
+.tabbar{position:fixed;bottom:0;left:0;right:0;display:flex;background:#161615;border-top:1px solid var(--line);padding-bottom:var(--sab);z-index:6}
+.tabbar button{flex:1;background:none;border:0;color:var(--t3);padding:8px 0 7px;font-size:11.5px;cursor:pointer}
+.tabbar button.on{color:var(--t1)}
+.tabbar svg{display:block;margin:0 auto 2px;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+button{font:inherit}
+.btn{background:var(--s2);border:1px solid var(--line);color:var(--t1);border-radius:9px;padding:8px 12px;cursor:pointer}
+.btn.pri{background:#2a78d6;border-color:#2a78d6;color:#fff}
+.btn.sm{padding:5px 9px;font-size:13px}
+.btn:disabled{opacity:.45}
+.iconbtn{background:none;border:1px solid var(--line);color:var(--t1);border-radius:9px;width:36px;height:34px;font-size:17px;cursor:pointer}
+.badge{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:58px;border-radius:8px;padding:3px 7px;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.badge small{font-weight:500;font-size:10.5px}
+.b0{background:#184f95;color:#f0efec}.b1{background:#256abf;color:#fff}.b2{background:#3987e5;color:#fff}.b3{background:#86b6ef;color:#0b0b0b}
+.row{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.item{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);cursor:pointer}
+.item:first-child{border-top:0}
+.item .main{flex:1;min-width:0}
+.item .t{font-weight:600}
+.item .s{color:var(--t3);font-size:12.5px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+th,td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{color:var(--t3);font-weight:600}
+td.n,th.n{text-align:right}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.bar{height:6px;background:var(--s2);border-radius:3px;overflow:hidden;min-width:56px}
+.bar>i{display:block;height:100%;background:#3987e5;border-radius:3px}
+.warn{color:var(--ser);font-size:13px;margin:4px 0}
+.warn.crit{color:#e66767}
+.chartWrap{position:relative;margin-top:4px}
+canvas#chart{width:100%;height:240px;display:block;touch-action:pan-y}
+.tip{position:absolute;pointer-events:none;background:#0d0d0c;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12px;display:none;white-space:nowrap;z-index:2;color:var(--t1)}
+.tip .r{display:flex;align-items:center;gap:6px;justify-content:space-between}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--t2);margin:6px 0 0}
+.sw{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+input,select,textarea{background:var(--s2);color:var(--t1);border:1px solid var(--line);border-radius:8px;padding:7px 8px;font:inherit;font-size:16px;width:100%}
+textarea{font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+input[type=checkbox]{width:auto}
+input[type=range]{padding:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.grid6 input,.grid4 input{padding:6px 4px;font-size:14px;text-align:center}
+label.f{display:block;font-size:12px;color:var(--t3);margin:9px 0 3px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-shrink:0}
+.seg button{background:none;border:0;color:var(--t2);padding:5px 10px;font-size:12.5px;cursor:pointer}
+.seg button.on{background:var(--s2);color:var(--t1)}
+.tag{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:6px;padding:1px 6px;color:var(--t3);margin-left:4px;vertical-align:middle}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + var(--sab));background:#2b2b29;color:var(--t1);padding:9px 14px;border-radius:10px;font-size:13px;display:none;z-index:9;max-width:90vw}
+details>summary{cursor:pointer;color:var(--t2);font-size:13.5px}
+.formula{font-size:12.5px;color:var(--t2);background:var(--s2);border-radius:8px;padding:8px 9px;margin:8px 0;font-variant-numeric:tabular-nums;line-height:1.55}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13.5px}
+.kv div:nth-child(odd){color:var(--t3)}
+.status{padding:8px 10px;border-radius:9px;background:#2a2218;color:#f5d9a8;font-size:13px;margin-bottom:10px;display:none}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid var(--t3);border-top-color:transparent;border-radius:50%;animation:sp 0.8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.p{font-size:13.5px;color:var(--t2);line-height:1.55;margin:6px 0}
+.p b{color:var(--t1)}
+.sec{margin-top:12px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">Engin Balık Tut</div>
+  <div class="sub" id="stamp">Silivri – Eceabat · kıyıdan av</div>
+  <button class="iconbtn" id="btnRefresh" title="Veriyi yenile" aria-label="Veriyi yenile">↻</button>
+</header>
+
+<main>
+<div class="status" id="status"></div>
+
+<!-- ŞİMDİ -->
+<section class="tab active" id="tab-simdi">
+  <div class="card">
+    <div class="h">Hedef türler</div>
+    <div class="chips" id="spChips"></div>
+  </div>
+  <div class="card">
+    <div class="row"><div class="h">Şu an en uygun</div><div class="muted" id="nowLbl"></div></div>
+    <div id="nowList"></div>
+  </div>
+  <div class="card">
+    <div class="h">Önümüzdeki 72 saat — en iyi pencereler</div>
+    <div id="winList"></div>
+  </div>
+  <div class="card">
+    <div class="h">Meralar (şu an)</div>
+    <div id="spotList"></div>
+  </div>
+</section>
+
+<!-- MERA -->
+<section class="tab" id="tab-mera">
+  <div class="card">
+    <select id="spotSel" aria-label="Mera"></select>
+    <div id="spotInfo" class="sec"></div>
+  </div>
+  <div class="card">
+    <div class="row"><div class="h" style="margin:0">Saatlik skor</div>
+      <div class="seg" id="rangeSeg"><button data-r="48">48 sa</button><button data-r="168">7 gün</button></div></div>
+    <div class="muted" style="margin:6px 0 4px">Grafikte en fazla 4 tür (dokunarak seç)</div>
+    <div class="chips" id="chartChips"></div>
+    <div class="legend" id="legend"></div>
+    <div class="chartWrap"><canvas id="chart"></canvas><div class="tip" id="tip"></div></div>
+    <div class="muted">Açık bantlar gündüz, koyu bantlar gece. Grafiğe dokunduğun saatin ayrıntısı aşağıda görünür.</div>
+  </div>
+  <div class="card" id="hourCard"></div>
+  <div class="card" id="breakCard"></div>
+  <div class="card"><details id="tblDetails"><summary>Tablo görünümü (48 saat)</summary><div class="scroll sec" id="hourTable"></div></details></div>
+</section>
+
+<!-- GÜNLÜK -->
+<section class="tab" id="tab-gunluk">
+  <div class="card">
+    <div class="h">Av kaydı ekle</div>
+    <div class="muted">Boş dönüşleri de (adet 0) kaydet. Kalibrasyon başarılı ve boş seansları karşılaştırarak çalışır.</div>
+    <label class="f">Tarih – saat</label><input type="datetime-local" id="lgTime">
+    <div class="grid2">
+      <div><label class="f">Mera</label><select id="lgSpot"></select></div>
+      <div><label class="f">Tür</label><select id="lgSp"></select></div>
+    </div>
+    <div class="grid2">
+      <div><label class="f">Adet (0 = boş dönüş)</label><input type="number" id="lgCount" min="0" step="1" value="0" inputmode="numeric"></div>
+      <div><label class="f">Boylar (cm, virgülle)</label><input type="text" id="lgSizes" placeholder="28, 31" inputmode="decimal"></div>
+    </div>
+    <div class="grid2">
+      <div><label class="f">Teknik</label><select id="lgTech"><option>Spin</option><option>Dip / surf</option><option>Şamandıra</option><option>Çapari</option><option>LRF</option><option>Canlı yem</option><option>Diğer</option></select></div>
+      <div><label class="f">Yem</label><input type="text" id="lgBait" placeholder="karides, WTD…"></div>
+    </div>
+    <label class="f">Not</label><input type="text" id="lgNote" placeholder="su rengi, kaç saat, vs.">
+    <div class="row sec"><span class="muted" id="lgMsg"></span><button class="btn pri" id="lgSave">Kaydet</button></div>
+  </div>
+  <div class="card">
+    <div class="row"><div class="h" style="margin:0">Kayıtlar</div>
+      <div><button class="btn sm" id="lgExport">Dışa aktar</button> <label class="btn sm" style="display:inline-block">İçe al<input type="file" id="lgImport" accept="application/json,.json" style="display:none"></label></div></div>
+    <div id="lgList" class="sec"></div>
+  </div>
+  <div class="card">
+    <div class="h">Kalibrasyon</div>
+    <div id="calib"></div>
+  </div>
+</section>
+
+<!-- MODEL -->
+<section class="tab" id="tab-model">
+  <div class="card">
+    <div class="h">Faktör ağırlıkları <span class="tag" id="wScope">genel</span></div>
+    <div class="muted">Koşul uyumu = Σ(ağırlık × faktör uyumu) / Σ ağırlık. Değerler otomatik normalize edilir.</div>
+    <div id="wEdit" class="sec"></div>
+    <div class="row sec"><button class="btn sm" id="wReset">Ağırlıkları varsayılana döndür</button><button class="btn sm" id="wClearSp">Tür bazlı ağırlıkları sil</button></div>
+  </div>
+  <div class="card">
+    <div class="h">Tür parametreleri</div>
+    <select id="spEditSel"></select>
+    <div id="spEdit" class="sec"></div>
+  </div>
+  <div class="card">
+    <div class="h">Meralar</div>
+    <select id="stEditSel"></select>
+    <div id="stEdit" class="sec"></div>
+  </div>
+  <div class="card">
+    <details><summary>Tüm model (JSON) — dışa/içe aktar</summary>
+      <textarea id="modelJson" rows="12" class="sec" spellcheck="false"></textarea>
+      <div class="row sec"><button class="btn sm" id="mjLoad">Mevcut modeli göster</button><button class="btn sm" id="mjApply">JSON'u uygula</button><button class="btn sm" id="mjReset">Tümünü varsayılana döndür</button></div>
+    </details>
+  </div>
+  <div class="card" id="methodCard"></div>
+  <div class="card" id="legalCard"></div>
+</section>
+</main>
+
+<nav class="tabbar">
+  <button data-tab="simdi" class="on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Şimdi</button>
+  <button data-tab="mera"><svg viewBox="0 0 24 24"><path d="M3 17c3-2 6-2 9 0s6 2 9 0"/><path d="M3 12c3-2 6-2 9 0s6 2 9 0"/><path d="M12 3v5"/></svg>Mera</button>
+  <button data-tab="gunluk"><svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8M8 18h5"/></svg>Günlük</button>
+  <button data-tab="model"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Model</button>
+</nav>
+<div id="toast"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   Engin Balık Tut — Silivri–Eceabat kıyıdan av tahmin modeli
+   Skor = 100 × Mevsim × Habitat × Koşul uyumu × Uygulanabilirlik
+   Tüm parametreler "Model" sekmesinden görülebilir ve değiştirilebilir.
+   Veri: Open-Meteo Forecast + Marine API (anahtarsız). Astronomi yerel hesap.
+   ===================================================================== */
+const APP_VER = '1.0.0';
+const TZ_OFF = 3 * 3600;               // Türkiye sabit UTC+3 (2016'dan beri yaz saati yok)
+const DEG = Math.PI / 180;
+const LS = { model: 'ebt.model.v1', log: 'ebt.log.v1', cache: 'ebt.cache.v1', ui: 'ebt.ui.v1' };
+const CACHE_MAX_AGE = 40 * 60 * 1000;
+const WX_URL = 'https://api.open-meteo.com/v1/forecast';
+const MAR_URL = 'https://marine-api.open-meteo.com/v1/marine';
+const WX_VARS = 'temperature_2m,precipitation,pressure_msl,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m,weather_code';
+const MAR_VARS = 'wave_height,wave_direction,wave_period,sea_surface_temperature,ocean_current_velocity,ocean_current_direction';
+const SERIES = ['#3987e5', '#d95926', '#199e70', '#c98500'];   // koyu tema kategorik slotlar 1–4
+const ZEMIN = { kum: 'Kum', kaya: 'Kaya', karisik: 'Karışık', mendirek: 'Mendirek/iskele', akintili: 'Akıntılı', dereagzi: 'Dere ağzı', derin: 'Derin su yakın' };
+const AYLAR = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+const GUNLER = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+
+const FACTORS = [
+  { k: 'zaman', ad: 'Günün saati', acik: 'Güneş yüksekliğine göre gece / şafak / akşam / gündüz' },
+  { k: 'dalga', ad: 'Dalga', acik: 'Kıyıdaki belirgin dalga yüksekliği' },
+  { k: 'ruzgar', ad: 'Rüzgâr–kıyı', acik: 'Rüzgâr hızı ve kıyıya göre yönü' },
+  { k: 'sicaklik', ad: 'Su sıcaklığı', acik: 'Deniz yüzeyi sıcaklığı' },
+  { k: 'akinti', ad: 'Akıntı', acik: 'Yüzey akıntısı' },
+  { k: 'bulaniklik', ad: 'Bulanıklık', acik: 'Yağış + dalga + kıyıya rüzgâr geçmişi (0–1)' },
+  { k: 'basinc', ad: 'Basınç eğilimi', acik: 'Son 3 saatteki değişim' },
+  { k: 'solunar', ad: 'Ay / solunar', acik: 'Ay geçişleri ve doğuş-batışları' },
+];
+
+/* ---------------------- Varsayılan model ---------------------- */
+const LUFER_BASE = {
+  latin: 'Pomatomus saltatrix', minBoy: 18,
+  habitat: { akintili: 1, derin: .9, mendirek: .9, kaya: .75, karisik: .7, kum: .6, dereagzi: .6 },
+  wave: [0, .2, 1.0, 1.8], clarity: [0, .15, .6, 1.0],
+  wind: { calm: .6, onshoreLike: .3 }, pressure: 'avci', darkNight: true, dayTurbBoost: 0,
+};
+const DEFAULT_MODEL = {
+  version: 1,
+  weights: { zaman: .22, dalga: .16, ruzgar: .10, sicaklik: .14, akinti: .10, bulaniklik: .10, basinc: .10, solunar: .08 },
+  speciesWeights: {},
+  strait: { windFrom: 45, windGain: 0.6 },   // Boğaz ekseni: poyraz (KD) yüzey akıntısını hızlandırır
+  sstClim: [8, 7.5, 8, 11, 15.5, 21, 24.5, 25, 22.5, 18.5, 14.5, 11],  // Marmara yüzey suyu, aylık yaklaşık (yedek)
+  species: {
+    mirmir: { ad: 'Mırmır', latin: 'Lithognathus mormyrus', minBoy: null, boyNot: 'Boy sınırı kaynakta bulunamadı — tebliğden doğrula',
+      season: [.10, .05, .10, .25, .50, .80, 1, 1, .90, .65, .35, .15], bogazShift: 0,
+      habitat: { kum: 1, karisik: .6, mendirek: .5, kaya: .2, akintili: .3, dereagzi: .5, derin: .3 },
+      tod: { gece: 1, safak: .6, aksam: .9, gunduz: .25 }, dayTurbBoost: .15,
+      wave: [0, .15, .6, 1.1], sst: [14, 18, 25, 28], current: [0, 0, 1, 2.5], clarity: [0, .2, .6, 1.1],
+      wind: { calm: .75, onshoreLike: .2 }, pressure: 'sabit', darkNight: true,
+      takim: 'Kumlukta surf/dip takımı, ince uzun köstek; boru kurdu, kum kurdu. Akşam ve gece.' },
+    cipura: { ad: 'Çipura', latin: 'Sparus aurata', minBoy: 20,
+      season: [.10, .05, .05, .20, .45, .70, .90, 1, 1, .85, .50, .20], bogazShift: 0,
+      habitat: { karisik: 1, mendirek: 1, kum: .8, kaya: .6, akintili: .4, dereagzi: .7, derin: .6 },
+      tod: { gece: .5, safak: .8, aksam: .8, gunduz: .75 }, dayTurbBoost: 0,
+      wave: [0, .05, .5, 1.0], sst: [11, 17, 25, 28], current: [0, 0, 1.2, 3], clarity: [0, .1, .5, 1.0],
+      wind: { calm: .85, onshoreLike: -.2 }, pressure: 'sabit', darkNight: false,
+      takim: 'Mendirek dibi, kum–kaya geçişi; dip takımı; yengeç, midye, karides.' },
+    levrek: { ad: 'Levrek', latin: 'Dicentrarchus labrax', minBoy: 25,
+      season: [.90, .85, .75, .55, .40, .25, .20, .20, .40, .75, 1, 1], bogazShift: 0,
+      habitat: { kaya: 1, dereagzi: 1, mendirek: .9, karisik: .9, kum: .6, akintili: .8, derin: .7 },
+      tod: { gece: .75, safak: 1, aksam: 1, gunduz: .35 }, dayTurbBoost: .4,
+      wave: [-.3, .4, 1.2, 2.0], sst: [6, 10, 18, 26], current: [0, .3, 2.5, 5], clarity: [-.3, .4, 1, 1.2],
+      wind: { calm: .5, onshoreLike: .8 }, pressure: 'avci', darkNight: false,
+      takim: 'Köpüklü kaya, dere ağzı; spin (WTD, minnow, silikon) veya canlı karides ile şamandıra.' },
+    karagoz: { ad: 'Karagöz', latin: 'Diplodus vulgaris', minBoy: 18,
+      season: [.75, .70, .70, .65, .60, .50, .45, .50, .65, .85, .95, .85], bogazShift: 0,
+      habitat: { kaya: 1, mendirek: .9, karisik: .7, kum: .25, akintili: .6, dereagzi: .5, derin: .7 },
+      tod: { gece: .7, safak: .8, aksam: .9, gunduz: .6 }, dayTurbBoost: .2,
+      wave: [0, .2, .9, 1.6], sst: [8, 12, 22, 27], current: [0, .1, 1.8, 4], clarity: [-.2, .2, .7, 1.1],
+      wind: { calm: .6, onshoreLike: .5 }, pressure: 'sabit', darkNight: false,
+      takim: 'Kayalık ve mendirek taşı; şamandıra veya hafif dip; karides, midye, boru kurdu.' },
+    sargoz: { ad: 'Sargoz', latin: 'Diplodus sargus', minBoy: 21,
+      season: [.80, .80, .75, .60, .50, .40, .35, .40, .55, .75, .90, .90], bogazShift: 0,
+      habitat: { kaya: 1, mendirek: .85, karisik: .6, kum: .2, akintili: .6, dereagzi: .5, derin: .7 },
+      tod: { gece: .7, safak: .9, aksam: .9, gunduz: .5 }, dayTurbBoost: .3,
+      wave: [-.2, .4, 1.3, 2.0], sst: [8, 12, 20, 26], current: [0, .2, 2, 4], clarity: [-.2, .3, .85, 1.2],
+      wind: { calm: .5, onshoreLike: .7 }, pressure: 'sabit', darkNight: false,
+      takim: 'Köpüklü kayalık; şamandıra veya serbest takım; karides, midye, yengeç.' },
+    sarikanat: Object.assign({}, LUFER_BASE, { ad: 'Sarıkanat', grup: 'lüfer 18–24 cm', boyNot: '18 cm altı (çinekop) suya iade edilir',
+      season: [.20, .10, .05, .10, .20, .25, .35, .60, .90, 1, .85, .45], bogazShift: 15,
+      tod: { gece: .5, safak: 1, aksam: 1, gunduz: .5 }, sst: [12, 16, 23, 27], current: [0, .8, 4, 8],
+      takim: 'Spin: kaşık, rapala; çapari/zoka; çelik veya kalın florokarbon köstek.' }),
+    lufer: Object.assign({}, LUFER_BASE, { ad: 'Lüfer', grup: 'lüfer 24–35 cm',
+      season: [.40, .20, .10, .15, .20, .15, .15, .30, .60, .90, 1, .80], bogazShift: 20,
+      tod: { gece: .6, safak: 1, aksam: 1, gunduz: .45 }, sst: [11, 15, 22, 26], current: [0, 1, 4.5, 8],
+      takim: 'Spin (rapala, kaşık, popper) şafak ve akşam; akıntılı burun ve mendirek ucu.' }),
+    kofana: Object.assign({}, LUFER_BASE, { ad: 'Kofana', grup: 'lüfer 35+ cm',
+      season: [.70, .40, .20, .20, .20, .10, .05, .05, .15, .40, .80, 1], bogazShift: 20,
+      habitat: { akintili: 1, derin: 1, kaya: .8, mendirek: .8, karisik: .6, kum: .4, dereagzi: .5 },
+      tod: { gece: .8, safak: 1, aksam: 1, gunduz: .3 }, sst: [9, 12, 20, 25], current: [0, 1, 5, 9],
+      takim: 'Akşam–gece canlı yem (istavrit) ile şamandıra veya büyük rapala; çelik tel köstek.' }),
+    zargana: { ad: 'Zargana', latin: 'Belone belone', minBoy: null, boyNot: 'Boy sınırı kaynakta bulunamadı — tebliğden doğrula',
+      season: [.10, .15, .45, .75, .80, .50, .30, .35, .70, .90, .75, .30], bogazShift: 0,
+      habitat: { mendirek: 1, kaya: .8, karisik: .8, kum: .7, akintili: .8, derin: .8, dereagzi: .6 },
+      tod: { gece: .05, safak: .6, aksam: .5, gunduz: 1 }, dayTurbBoost: 0,
+      wave: [0, 0, .4, .9], sst: [11, 14, 20, 25], current: [0, 0, 2, 4], clarity: [0, 0, .3, .6],
+      wind: { calm: 1, onshoreLike: -.8 }, pressure: 'sabit', darkNight: false,
+      takim: 'Yüzeyde ince şamandıralı takım, küçük iğne; balık şeridi, karides; LRF.' },
+  },
+  // bakis: kıyıdan denize bakış yönü (°). fetch: rüzgârın GELDİĞİ yöne göre deniz açıklığı (km) [K,KD,D,GD,G,GB,B,KB]
+  // Koordinat, bakış, zemin ve fetch değerleri ÖN TANIMDIR — sahada doğrulayıp Model sekmesinden düzelt.
+  spots: [
+    { id: 'silivri', ad: 'Silivri', lat: 41.071, lon: 28.246, bolge: 'marmara', bakis: 180, zemin: ['kum', 'mendirek'], fetch: [0, 0, 8, 55, 50, 70, 12, 0] },
+    { id: 'eregli', ad: 'Marmara Ereğlisi', lat: 40.966, lon: 27.958, bolge: 'marmara', bakis: 190, zemin: ['kaya', 'karisik', 'mendirek'], fetch: [0, 0, 25, 65, 58, 55, 15, 0] },
+    { id: 'tekirdag', ad: 'Tekirdağ sahil', lat: 40.975, lon: 27.517, bolge: 'marmara', bakis: 145, zemin: ['kum', 'mendirek', 'karisik'], fetch: [0, 2, 37, 70, 45, 15, 0, 0] },
+    { id: 'barbaros', ad: 'Barbaros', lat: 40.908, lon: 27.455, bolge: 'marmara', bakis: 140, zemin: ['karisik', 'kaya'], fetch: [0, 2, 40, 70, 45, 12, 0, 0] },
+    { id: 'kumbag', ad: 'Kumbağ', lat: 40.866, lon: 27.395, bolge: 'marmara', bakis: 135, zemin: ['kum', 'karisik', 'kaya'], fetch: [0, 5, 45, 65, 40, 10, 0, 0] },
+    { id: 'ucmakdere', ad: 'Uçmakdere', lat: 40.795, lon: 27.358, bolge: 'marmara', bakis: 130, zemin: ['kaya', 'derin', 'karisik', 'dereagzi'], fetch: [0, 10, 50, 60, 35, 8, 0, 0] },
+    { id: 'gazikoy', ad: 'Gaziköy', lat: 40.752, lon: 27.305, bolge: 'marmara', bakis: 135, zemin: ['kaya', 'derin', 'karisik'], fetch: [0, 12, 50, 55, 30, 10, 0, 0] },
+    { id: 'murefte', ad: 'Mürefte', lat: 40.668, lon: 27.245, bolge: 'marmara', bakis: 150, zemin: ['karisik', 'mendirek', 'derin'], fetch: [0, 20, 55, 50, 30, 12, 0, 0] },
+    { id: 'sarkoy', ad: 'Şarköy', lat: 40.612, lon: 27.112, bolge: 'marmara', bakis: 185, zemin: ['kum', 'mendirek', 'karisik'], fetch: [0, 10, 60, 45, 35, 35, 10, 0] },
+    { id: 'gelibolu', ad: 'Gelibolu', lat: 40.414, lon: 26.684, bolge: 'bogaz', bakis: 90, zemin: ['kaya', 'akintili', 'mendirek', 'derin'], fetch: [5, 40, 70, 6, 6, 15, 0, 0], akintiBaz: 2.8, marinePt: [40.40, 26.72] },
+    { id: 'eceabat', ad: 'Eceabat', lat: 40.184, lon: 26.357, bolge: 'bogaz', bakis: 110, zemin: ['karisik', 'akintili', 'mendirek'], fetch: [3, 8, 5, 5, 4, 3, 0, 0], akintiBaz: 3.7, marinePt: [40.168, 26.381] },
+    { id: 'kilitbahir', ad: 'Kilitbahir', lat: 40.148, lon: 26.381, bolge: 'bogaz', bakis: 95, zemin: ['kaya', 'akintili', 'derin'], fetch: [2, 4, 1.5, 3, 5, 15, 0, 0], akintiBaz: 6.5, marinePt: [40.150, 26.393] },
+  ],
+};
+
+/* ---------------------- Yardımcılar ---------------------- */
+const $ = s => document.querySelector(s);
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const r0 = x => x == null ? '–' : Math.round(x).toString();
+const r1 = x => x == null ? '–' : (Math.round(x * 10) / 10).toFixed(1).replace('.', ',');
+const r2 = x => x == null ? '–' : (Math.round(x * 100) / 100).toFixed(2).replace('.', ',');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const deepCopy = o => JSON.parse(JSON.stringify(o));
+function lsGet(k) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+function angDiff(a, b) { let d = Math.abs(((a - b) % 360 + 360) % 360); return d > 180 ? 360 - d : d; }
+function haversine(la1, lo1, la2, lo2) { const R = 6371, dLa = (la2 - la1) * DEG, dLo = (lo2 - lo1) * DEG; const a = Math.sin(dLa / 2) ** 2 + Math.cos(la1 * DEG) * Math.cos(la2 * DEG) * Math.sin(dLo / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(a)); }
+function offsetPt(lat, lon, bearing, km) { return [lat + km * Math.cos(bearing * DEG) / 111.2, lon + km * Math.sin(bearing * DEG) / (111.2 * Math.cos(lat * DEG))]; }
+function trap(x, p) { if (x == null || !p) return null; const [a, b, c, d] = p; if (x < b) { if (b <= a) return x >= a ? 1 : 0; return clamp((x - a) / (b - a), 0, 1); } if (x > c) { if (d <= c) return x <= d ? 1 : 0; return clamp((d - x) / (d - c), 0, 1); } return 1; }
+function smooth(e0, e1, x) { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); }
+function interp(pts, x) { if (x <= pts[0][0]) return pts[0][1]; for (let i = 1; i < pts.length; i++) { if (x <= pts[i][0]) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; return y0 + (y1 - y0) * (x - x0) / (x1 - x0); } } return pts[pts.length - 1][1]; }
+function lp(t) { const d = new Date((t + TZ_OFF) * 1000); return { y: d.getUTCFullYear(), m: d.getUTCMonth(), d: d.getUTCDate(), h: d.getUTCHours(), mi: d.getUTCMinutes(), wd: d.getUTCDay() }; }
+const pad = n => String(n).padStart(2, '0');
+function fmtHM(t) { const p = lp(t); return pad(p.h) + ':' + pad(p.mi); }
+function fmtDayHM(t) { const p = lp(t); return GUNLER[p.wd] + ' ' + pad(p.h) + ':' + pad(p.mi); }
+function fmtDate(t) { const p = lp(t); return p.d + ' ' + AYLAR[p.m] + ' ' + GUNLER[p.wd] + ' ' + pad(p.h) + ':' + pad(p.mi); }
+function windName(d) { const n = ['Yıldız', 'Poyraz', 'Gündoğusu', 'Keşişleme', 'Kıble', 'Lodos', 'Batı', 'Karayel']; return n[Math.round((((d % 360) + 360) % 360) / 45) % 8]; }
+function compass(d) { const n = ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB']; return d == null ? '' : n[Math.round((((d % 360) + 360) % 360) / 45) % 8]; }
+function scoreCls(s) { return s >= 70 ? ['b3', 'Çok iyi'] : s >= 50 ? ['b2', 'İyi'] : s >= 30 ? ['b1', 'Orta'] : ['b0', 'Zayıf']; }
+function badge(s, small) { const [c, l] = scoreCls(s); return `<span class="badge ${c}">${r0(s)}${small ? '' : ` <small>${l}</small>`}</span>`; }
+let toastT; function toast(m, ms = 2600) { const el = $('#toast'); el.textContent = m; el.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => el.style.display = 'none', ms); }
+function status(html) { const el = $('#status'); if (!html) { el.style.display = 'none'; return; } el.innerHTML = html; el.style.display = 'block'; }
+
+/* ---------------------- Astronomi (SunCalc yöntemi, V. Agafonkin) ---------------------- */
+const dayMs = 864e5, J1970 = 2440588, J2000 = 2451545, OBL = DEG * 23.4397;
+const toDays = date => date.valueOf() / dayMs - 0.5 + J1970 - J2000;
+const RA = (l, b) => Math.atan2(Math.sin(l) * Math.cos(OBL) - Math.tan(b) * Math.sin(OBL), Math.cos(l));
+const DEC = (l, b) => Math.asin(Math.sin(b) * Math.cos(OBL) + Math.cos(b) * Math.sin(OBL) * Math.sin(l));
+const ALT = (H, phi, dec) => Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H));
+const SID = (d, lw) => DEG * (280.16 + 360.9856235 * d) - lw;
+function sunCoords(d) { const M = DEG * (357.5291 + 0.98560028 * d); const C = DEG * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M)); const L = M + C + DEG * 102.9372 + Math.PI; return { dec: DEC(L, 0), ra: RA(L, 0) }; }
+function moonCoords(d) { const L = DEG * (218.316 + 13.176396 * d), M = DEG * (134.963 + 13.064993 * d), F = DEG * (93.272 + 13.229350 * d); const l = L + DEG * 6.289 * Math.sin(M), b = DEG * 5.128 * Math.sin(F); return { ra: RA(l, b), dec: DEC(l, b), dist: 385001 - 20905 * Math.cos(M) }; }
+function sunAltDeg(date, lat, lon) { const d = toDays(date), c = sunCoords(d), H = SID(d, DEG * -lon) - c.ra; return ALT(H, DEG * lat, c.dec) / DEG; }
+function moonAltDeg(date, lat, lon) { const d = toDays(date), c = moonCoords(d), H = SID(d, DEG * -lon) - c.ra; let h = ALT(H, DEG * lat, c.dec); const hh = Math.max(h, 0); h += 0.0002967 / Math.tan(hh + 0.00312536 / (hh + 0.08901179)); return h / DEG; }
+function moonIllum(date) { const d = toDays(date), s = sunCoords(d), m = moonCoords(d), sd = 149598000; const phi = Math.acos(Math.sin(s.dec) * Math.sin(m.dec) + Math.cos(s.dec) * Math.cos(m.dec) * Math.cos(s.ra - m.ra)); const inc = Math.atan2(sd * Math.sin(phi), m.dist - sd * Math.cos(phi)); const ang = Math.atan2(Math.cos(s.dec) * Math.sin(s.ra - m.ra), Math.sin(s.dec) * Math.cos(m.dec) - Math.cos(s.dec) * Math.sin(m.dec) * Math.cos(s.ra - m.ra)); return { fraction: (1 + Math.cos(inc)) / 2, phase: 0.5 + 0.5 * inc * (ang < 0 ? -1 : 1) / Math.PI }; }
+function phaseName(p) { const n = [[.03, 'Yeni ay'], [.22, 'Hilal (büyüyen)'], [.28, 'İlk dördün'], [.47, 'Şişkin (büyüyen)'], [.53, 'Dolunay'], [.72, 'Şişkin (küçülen)'], [.78, 'Son dördün'], [.97, 'Hilal (küçülen)'], [1.01, 'Yeni ay']]; for (const [x, s] of n) if (p <= x) return s; return ''; }
+function moonEvents(lat, lon, t0, t1) {
+  const ev = [], step = 600; let p2 = null, p1 = null;
+  for (let t = t0 - 86400; t <= t1 + 86400; t += step) {
+    const a = moonAltDeg(new Date(t * 1000), lat, lon);
+    if (p1 && (p1.a < 0) !== (a < 0)) ev.push({ t: t - step / 2, type: 'minor' });
+    if (p2 && p1 && ((p1.a > p2.a && p1.a >= a) || (p1.a < p2.a && p1.a <= a))) ev.push({ t: p1.t, type: 'major' });
+    p2 = p1; p1 = { t, a };
+  }
+  return ev;
+}
+function solunarAt(t, ev) {
+  let best = .35;
+  for (const e of ev) {
+    const dm = Math.abs(e.t - t) / 60;
+    if (e.type === 'major') { if (dm <= 60) best = Math.max(best, 1); else if (dm < 120) best = Math.max(best, 1 - (dm - 60) / 60 * .65); }
+    else { if (dm <= 40) best = Math.max(best, .75); else if (dm < 90) best = Math.max(best, .75 - (dm - 40) / 50 * .4); }
+  }
+  return best;
+}
+function sunTimes(lat, lon, tDay) { // tDay: o günün yerel 00:00 unix
+  let rise = null, set = null, prev = sunAltDeg(new Date(tDay * 1000), lat, lon);
+  for (let t = tDay + 300; t <= tDay + 86400; t += 300) { const a = sunAltDeg(new Date(t * 1000), lat, lon); if (prev < -0.833 && a >= -0.833 && rise == null) rise = t; if (prev >= -0.833 && a < -0.833 && set == null) set = t; prev = a; }
+  return { rise, set };
+}
+
+/* ---------------------- Model durumu ---------------------- */
+let model = loadModel();
+function loadModel() {
+  const m = lsGet(LS.model);
+  if (m && m.version === DEFAULT_MODEL.version && m.species && m.spots && m.weights) {
+    for (const k in DEFAULT_MODEL) if (m[k] == null) m[k] = deepCopy(DEFAULT_MODEL[k]);
+    return m;
+  }
+  return deepCopy(DEFAULT_MODEL);
+}
+function saveModel() { lsSet(LS.model, model); invalidateScores(); }
+const spIds = () => Object.keys(model.species);
+const spotById = id => model.spots.find(s => s.id === id);
+function weightsFor(spId) { return (model.speciesWeights && model.speciesWeights[spId]) || model.weights; }
+
+let ui = Object.assign({ tab: 'simdi', targets: null, spot: 'tekirdag', range: 48, chartSp: null, slots: {}, focusSp: null, selIdx: null }, lsGet(LS.ui) || {});
+function saveUi() { const { selIdx, ...rest } = ui; lsSet(LS.ui, rest); }
+
+/* ---------------------- Fiziksel alt modeller ---------------------- */
+function sectorInterp(arr, dirFrom) { const p = (((dirFrom % 360) + 360) % 360) / 45; const i = Math.floor(p) % 8, f = p - Math.floor(p); return arr[i] * (1 - f) + arr[(i + 1) % 8] * f; }
+// JONSWAP fetch-sınırlı dalga: Hs = 0.0016·U·√(F/g), üst sınır tam gelişmiş deniz (P-M) Hs ≈ 0.0214·U²
+function fetchHs(spot, Ukmh, dirFrom) { const U = Ukmh / 3.6; if (U < 0.5) return 0; const F = sectorInterp(spot.fetch, dirFrom) * 1000; if (F <= 0) return 0.02; return Math.min(0.0016 * U * Math.sqrt(F / 9.81), 0.0214 * U * U); }
+function climSst(t) { const p = lp(t); const dim = new Date(Date.UTC(p.y, p.m + 1, 0)).getUTCDate(); const x = p.m + (p.d - .5) / dim - .5; const i0 = Math.floor(x), f = x - i0; const A = model.sstClim; return A[(i0 % 12 + 12) % 12] * (1 - f) + A[((i0 + 1) % 12 + 12) % 12] * f; }
+function seasonVal(arr, t, shiftDays) { const p = lp(t - (shiftDays || 0) * 86400); const dim = new Date(Date.UTC(p.y, p.m + 1, 0)).getUTCDate(); const x = p.m + (p.d - .5) / dim - .5; const i0 = Math.floor(x), f = x - i0; return arr[(i0 % 12 + 12) % 12] * (1 - f) + arr[((i0 + 1) % 12 + 12) % 12] * f; }
+function marinePoint(spot) { return spot.marinePt || offsetPt(spot.lat, spot.lon, spot.bakis, 3); }
+
+function practical(spot, h) {
+  let v = 1; const w = []; const rocky = spot.zemin.includes('kaya') || spot.zemin.includes('derin');
+  if (h.wcode != null && h.wcode >= 95) { v *= .15; w.push(['crit', 'Gök gürültülü sağanak/fırtına — kıyıdan uzak dur']); }
+  if (h.gust != null) { if (h.gust >= 55) { v *= .25; w.push(['crit', `Hamle ${r0(h.gust)} km/sa — çok kuvvetli`]); } else if (h.gust >= 40) { v *= .65; w.push(['', `Hamle ${r0(h.gust)} km/sa — atış ve takım kontrolü zor`]); } }
+  if (rocky) { if (h.hs >= 1.6) { v *= .25; w.push(['crit', `Kayalıkta ${r1(h.hs)} m dalga — tehlikeli, taşlara inme`]); } else if (h.hs >= 1.1) { v *= .7; w.push(['', `Kayalıkta ${r1(h.hs)} m dalga — dikkat`]); } }
+  else if (h.hs >= 2.0) { v *= .45; w.push(['', `${r1(h.hs)} m dalga — kumsalda bile zor`]); }
+  if (h.rain >= 5) { v *= .7; w.push(['', `Kuvvetli yağış ${r1(h.rain)} mm/sa`]); }
+  if (h.cur >= 6) { v *= .8; w.push(['', `Akıntı ~${r1(h.cur)} km/sa — dip takımı tutmaz; ağır kurşun veya spin`]); }
+  return { v: Math.max(v, .05), w };
+}
+
+function buildHours(spot, wx, mar) {
+  const W = wx.hourly, T = W.time, n = T.length;
+  const g = (arr, k) => (arr && k != null && arr[k] != null && isFinite(arr[k])) ? +arr[k] : null;
+  const marOk = !!(mar && !mar.error && mar.hourly && Array.isArray(mar.hourly.time));
+  const cellKm = marOk && mar.latitude != null ? haversine(spot.lat, spot.lon, mar.latitude, mar.longitude) : null;
+  const isB = spot.bolge === 'bogaz';
+  const useWave = marOk && cellKm != null && cellKm <= (isB ? 6 : 15);
+  const useSst = marOk && cellKm != null && cellKm <= 40;
+  const useCur = marOk && !isB && cellKm != null && cellKm <= 15;
+  const mi = new Map(); if (marOk) mar.hourly.time.forEach((t, i) => mi.set(t, i));
+  const M = marOk ? mar.hourly : {};
+  const H = []; let prevF = 0;
+  for (let i = 0; i < n; i++) {
+    const t = T[i], j = mi.get(t);
+    const U = g(W.wind_speed_10m, i) ?? 0, D = g(W.wind_direction_10m, i) ?? 0;
+    const h = { t, U, D, gust: g(W.wind_gusts_10m, i), temp: g(W.temperature_2m, i), rain: g(W.precipitation, i) ?? 0, p: g(W.pressure_msl, i), cloud: g(W.cloud_cover, i), wcode: g(W.weather_code, i) };
+    const hf = Math.max(fetchHs(spot, U, D), prevF * .8); prevF = hf; h.hsFetch = hf;
+    h.waveDir = g(M.wave_direction, j); h.wavePer = g(M.wave_period, j);
+    const hsM = useWave ? g(M.wave_height, j) : null;
+    if (hsM != null) { const rw = h.waveDir != null ? angDiff(h.waveDir, spot.bakis) : 0; const kf = rw <= 60 ? 1 : rw >= 120 ? .25 : 1 - .75 * (rw - 60) / 60; h.hsModel = hsM; h.hs = hsM * kf; h.hsSrc = kf < 1 ? 'model, kıyı düzeltmeli' : 'model'; }
+    else { h.hsModel = null; h.hs = hf; h.hsSrc = 'fetch tahmini'; }
+    const sst = useSst ? g(M.sea_surface_temperature, j) : null;
+    if (sst != null) { h.sst = sst; h.sstSrc = 'model'; } else { h.sst = climSst(t); h.sstSrc = 'aylık ortalama'; }
+    if (isB) {
+      const along = U * Math.cos((D - model.strait.windFrom) * DEG);
+      const est = (spot.akintiBaz || 3) * clamp(1 + model.strait.windGain * along / 30, -.3, 2);
+      h.cur = Math.abs(est); h.curDir = est >= 0 ? 'Ege’ye doğru (GB)' : 'ters, Marmara’ya (KD)'; h.curSrc = 'Boğaz modeli';
+      h.curModel = g(M.ocean_current_velocity, j);
+    } else {
+      const cm = useCur ? g(M.ocean_current_velocity, j) : null;
+      if (cm != null) { h.cur = cm; h.curSrc = 'model'; const cd = g(M.ocean_current_direction, j); h.curDir = cd != null ? '→ ' + compass(cd) : ''; }
+      else { h.cur = .025 * U; h.curSrc = 'rüzgâr sürüklenmesi tahmini'; h.curDir = ''; }
+    }
+    const dt = new Date(t * 1000);
+    h.sunAlt = sunAltDeg(dt, spot.lat, spot.lon);
+    h.sunRising = sunAltDeg(new Date(t * 1000 + 20 * 60000), spot.lat, spot.lon) > h.sunAlt;
+    h.moonAlt = moonAltDeg(dt, spot.lat, spot.lon);
+    const mil = moonIllum(dt); h.illum = mil.fraction; h.phase = mil.phase;
+    H.push(h);
+  }
+  const rainRef = spot.zemin.includes('dereagzi') ? 12 : 20;
+  for (let i = 0; i < n; i++) {
+    const h = H[i];
+    const p3 = i >= 3 ? H[i - 3].p : null; h.dp3 = (h.p != null && p3 != null) ? h.p - p3 : null;
+    let rain48 = 0; for (let k = Math.max(0, i - 47); k <= i; k++) rain48 += H[k].rain || 0;
+    let hsMax = 0; for (let k = Math.max(0, i - 23); k <= i; k++) hsMax = Math.max(hsMax, H[k].hs || 0);
+    let on = 0, c = 0; for (let k = Math.max(0, i - 5); k <= i; k++) { on += Math.max(0, Math.cos(angDiff(H[k].D, spot.bakis) * DEG)) * Math.min(H[k].U / 30, 1); c++; }
+    h.rain48 = rain48;
+    h.turb = clamp(.35 * Math.min(rain48 / rainRef, 1) + .45 * Math.min(hsMax / 1.4, 1) + .20 * (on / c), 0, 1);
+    h.relWind = angDiff(h.D, spot.bakis);
+  }
+  const ev = n ? moonEvents(spot.lat, spot.lon, T[0], T[n - 1]) : [];
+  for (const h of H) { h.sol = solunarAt(h.t, ev); const pr = practical(spot, h); h.prac = pr.v; h.warn = pr.w; }
+  return { H, meta: { cellKm, useWave, useSst, useCur, marOk, marErr: mar && mar.error ? String(mar.reason || mar.error) : null } };
+}
+
+/* ---------------------- Skor ---------------------- */
+function todScore(sp, h) {
+  const a = h.sunAlt, mDay = smooth(2, 12, a), mNight = 1 - smooth(-15, -6, a), mTw = Math.max(0, 1 - mDay - mNight), tot = mDay + mNight + mTw || 1;
+  const day = Math.min(1, sp.tod.gunduz + (sp.dayTurbBoost || 0) * h.turb);
+  return (mDay * day + mNight * sp.tod.gece + mTw * (h.sunRising ? sp.tod.safak : sp.tod.aksam)) / tot;
+}
+function windScore(sp, U, rel) {
+  const on = Math.cos(rel * DEG), s = clamp(U / 25, 0, 1);
+  let f = sp.wind.calm * (1 - s) + (.6 + .4 * sp.wind.onshoreLike * on) * s;
+  if (U > 40) f *= clamp(1 - (U - 40) / 40, .3, 1);
+  return clamp(f, 0, 1);
+}
+const PRES = { avci: [[-5, .55], [-2.5, 1], [-.6, 1], [.6, .7], [2, .45], [4, .3]], sabit: [[-5, .4], [-2, .65], [-.8, 1], [.8, 1], [2, .65], [4, .4]] };
+function solScore(sp, h) { let v = h.sol; if (sp.darkNight && h.sunAlt < -6 && h.moonAlt > 0) v *= (1 - .35 * h.illum); return v; }
+function habitatVal(sp, spot) { let m = 0; for (const z of spot.zemin) m = Math.max(m, sp.habitat[z] ?? 0); return m || .3; }
+function evalSp(spot, spId, h) {
+  const sp = model.species[spId];
+  const f = {
+    zaman: todScore(sp, h), dalga: trap(h.hs, sp.wave), ruzgar: windScore(sp, h.U, h.relWind), sicaklik: trap(h.sst, sp.sst),
+    akinti: trap(h.cur, sp.current), bulaniklik: trap(h.turb, sp.clarity), basinc: h.dp3 == null ? null : interp(PRES[sp.pressure] || PRES.sabit, h.dp3), solunar: solScore(sp, h),
+  };
+  const w = weightsFor(spId); let sw = 0, s = 0;
+  for (const k in w) { if (f[k] == null || !w[k]) continue; sw += w[k]; s += w[k] * f[k]; }
+  const cond = sw > 0 ? s / sw : 0;
+  const season = seasonVal(sp.season, h.t, spot.bolge === 'bogaz' ? (sp.bogazShift || 0) : 0);
+  const habitat = habitatVal(sp, spot);
+  return { score: 100 * season * habitat * cond * h.prac, f, w, sw, cond, season, habitat, prac: h.prac };
+}
+
+/* ---------------------- Veri yükleme ---------------------- */
+const state = { data: {}, at: null, loading: false, scoreCache: new Map() };
+function invalidateScores() { state.scoreCache.clear(); }
+function scoresFor(spotId, spId) {
+  const key = spotId + '|' + spId; let a = state.scoreCache.get(key); if (a) return a;
+  const d = state.data[spotId]; if (!d || !d.H) return null; const spot = spotById(spotId);
+  a = d.H.map(h => evalSp(spot, spId, h).score); state.scoreCache.set(key, a); return a;
+}
+function nowIdx(H) { const now = Date.now() / 1000; let best = 0; for (let i = 0; i < H.length; i++) { if (H[i].t <= now + 1800) best = i; else break; } return best; }
+
+async function getJSON(url, ms = 25000) {
+  const c = new AbortController(), to = setTimeout(() => c.abort(), ms);
+  try { const r = await fetch(url, { signal: c.signal }); const j = await r.json().catch(() => null); if (!r.ok || !j || j.error) throw new Error((j && j.reason) || ('HTTP ' + r.status)); return j; }
+  finally { clearTimeout(to); }
+}
+async function fetchMulti(base, params, pts) {
+  const fmt = v => v.toFixed(4);
+  try {
+    const j = await getJSON(`${base}?latitude=${pts.map(p => fmt(p[0])).join(',')}&longitude=${pts.map(p => fmt(p[1])).join(',')}&${params}`);
+    const arr = Array.isArray(j) ? j : [j]; if (arr.length !== pts.length) throw new Error('konum sayısı uyuşmadı'); return arr;
+  } catch (e) {
+    if (e.name === 'TypeError' || e.name === 'AbortError') return pts.map(() => ({ error: true, reason: e.name === 'AbortError' ? 'zaman aşımı' : 'bağlantı yok' }));
+    const out = [];
+    for (const p of pts) { try { out.push(await getJSON(`${base}?latitude=${fmt(p[0])}&longitude=${fmt(p[1])}&${params}`)); } catch (err) { out.push({ error: true, reason: String(err.message || err) }); } }
+    return out;
+  }
+}
+const WX_P = (past, fc) => `hourly=${WX_VARS}&wind_speed_unit=kmh&timeformat=unixtime&timezone=Europe%2FIstanbul&past_days=${past}&forecast_days=${fc}`;
+const MAR_P = (past, fc) => `hourly=${MAR_VARS}&timeformat=unixtime&timezone=Europe%2FIstanbul&past_days=${past}&forecast_days=${fc}&cell_selection=sea`;
+const spotsSig = () => model.spots.map(s => s.id + '@' + s.lat + ',' + s.lon + (s.marinePt ? '/' + s.marinePt.join(',') : '') + ':' + s.bakis).join(';');
+
+async function loadAll(force) {
+  if (state.loading) return; state.loading = true;
+  const cache = lsGet(LS.cache), sig = spotsSig();
+  try {
+    if (!force && cache && cache.sig === sig && Date.now() - cache.at < CACHE_MAX_AGE) { applyRaw(cache); return; }
+    status('<span class="spin"></span>Hava ve deniz verisi alınıyor…');
+    const pts = model.spots.map(s => [s.lat, s.lon]), mpts = model.spots.map(marinePoint);
+    const [wx, mar] = await Promise.all([fetchMulti(WX_URL, WX_P(2, 7), pts), fetchMulti(MAR_URL, MAR_P(2, 7), mpts)]);
+    if (wx.every(x => x.error)) throw new Error(wx[0].reason || 'hava verisi alınamadı');
+    const raw = { at: Date.now(), sig, wx, mar };
+    if (!lsSet(LS.cache, raw)) { try { localStorage.removeItem(LS.cache); } catch (e) { } }
+    applyRaw(raw); status(null);
+  } catch (e) {
+    if (cache && cache.sig === sig) { applyRaw(cache); status(`Veri yenilenemedi (${esc(e.message)}). ${fmtDate(cache.at / 1000)} tarihli kayıtlı veri gösteriliyor.`); }
+    else status(`Veri alınamadı: ${esc(e.message)}. İnternet bağlantısını kontrol edip ↻ ile tekrar dene.`);
+  } finally { state.loading = false; }
+}
+function applyRaw(raw) {
+  state.data = {}; state.at = raw.at; invalidateScores();
+  model.spots.forEach((s, i) => {
+    const w = raw.wx[i], m = raw.mar ? raw.mar[i] : null;
+    if (!w || w.error || !w.hourly) { state.data[s.id] = { error: (w && w.reason) || 'veri yok' }; return; }
+    try { state.data[s.id] = buildHours(s, w, m); } catch (e) { state.data[s.id] = { error: String(e.message || e) }; }
+  });
+  $('#stamp').textContent = 'Veri: ' + fmtDate(raw.at / 1000) + ' · Open-Meteo';
+  renderAll();
+}
+
+/* ---------------------- ŞİMDİ ---------------------- */
+function defaultTargets() { return spIds(); }
+function renderChips() {
+  ui.targets = (ui.targets || []).filter(id => model.species[id]);
+  if (!ui.targets.length) ui.targets = defaultTargets();
+  $('#spChips').innerHTML = spIds().map(id => { const sp = model.species[id]; return `<button class="chip ${ui.targets.includes(id) ? 'on' : ''}" data-sp="${id}">${esc(sp.ad)}</button>`; }).join('');
+}
+function renderNow() {
+  const rows = [];
+  for (const s of model.spots) {
+    const d = state.data[s.id]; if (!d || !d.H) continue; const i = nowIdx(d.H);
+    for (const id of ui.targets) { const a = scoresFor(s.id, id); if (a) rows.push({ s, id, v: a[i], i }); }
+  }
+  rows.sort((a, b) => b.v - a.v);
+  const any = Object.values(state.data).find(d => d.H);
+  $('#nowLbl').textContent = any ? fmtDayHM(any.H[nowIdx(any.H)].t) : '';
+  $('#nowList').innerHTML = rows.length ? rows.slice(0, 8).map(r => {
+    const h = state.data[r.s.id].H[r.i];
+    return `<div class="item" data-go="${r.s.id}" data-gsp="${r.id}">${badge(r.v)}<div class="main"><div class="t">${esc(model.species[r.id].ad)} · ${esc(r.s.ad)}</div><div class="s">${windName(h.D)} ${r0(h.U)} km/sa · dalga ${r1(h.hs)} m · su ${r1(h.sst)}°C${h.warn.length ? ' · ⚠ ' + esc(h.warn[0][1]) : ''}</div></div></div>`;
+  }).join('') : '<div class="muted">Veri bekleniyor…</div>';
+  // pencereler
+  const wins = [];
+  for (const s of model.spots) {
+    const d = state.data[s.id]; if (!d || !d.H) continue; const i0 = nowIdx(d.H), i1 = Math.min(d.H.length - 1, i0 + 72);
+    for (const id of ui.targets) {
+      const a = scoresFor(s.id, id); if (!a) continue; let run = null; const local = [];
+      for (let i = i0; i <= i1; i++) {
+        if (a[i] >= 50) { if (!run) run = { s, id, a: i, b: i, peak: a[i], pi: i }; else { run.b = i; if (a[i] > run.peak) { run.peak = a[i]; run.pi = i; } } }
+        else if (run) { local.push(run); run = null; }
+      }
+      if (run) local.push(run);
+      local.sort((x, y) => y.peak - x.peak); wins.push(...local.slice(0, 2));
+    }
+  }
+  wins.sort((x, y) => y.peak - x.peak);
+  $('#winList').innerHTML = wins.length ? wins.slice(0, 10).map(w => {
+    const H = state.data[w.s.id].H;
+    return `<div class="item" data-go="${w.s.id}" data-gsp="${w.id}" data-gi="${w.pi}">${badge(w.peak)}<div class="main"><div class="t">${esc(model.species[w.id].ad)} · ${esc(w.s.ad)}</div><div class="s">${fmtDayHM(H[w.a].t)} – ${lp(H[w.b].t + 3600).d !== lp(H[w.a].t).d ? fmtDayHM(H[w.b].t + 3600) : fmtHM(H[w.b].t + 3600)} · zirve ${fmtDayHM(H[w.pi].t)}</div></div></div>`;
+  }).join('') : '<div class="muted">Önümüzdeki 72 saatte seçili türler için 50 üzeri pencere yok. Mera sekmesinden saatlik skorlara bakabilirsin.</div>';
+  // meralar
+  $('#spotList').innerHTML = model.spots.map(s => {
+    const d = state.data[s.id];
+    if (!d || !d.H) return `<div class="item" data-go="${s.id}"><span class="badge b0">–</span><div class="main"><div class="t">${esc(s.ad)}</div><div class="s">${esc(d ? d.error : 'veri yok')}</div></div></div>`;
+    const i = nowIdx(d.H), h = d.H[i]; let best = null;
+    for (const id of ui.targets) { const a = scoresFor(s.id, id); if (a && (!best || a[i] > best.v)) best = { id, v: a[i] }; }
+    return `<div class="item" data-go="${s.id}">${best ? badge(best.v, true) : ''}<div class="main"><div class="t">${esc(s.ad)} <span class="tag">${s.bolge === 'bogaz' ? 'Boğaz' : 'Marmara'}</span></div><div class="s">${best ? esc(model.species[best.id].ad) + ' · ' : ''}${windName(h.D)} ${r0(h.U)} km/sa ${relTxt(h.relWind)} · dalga ${r1(h.hs)} m${h.warn.length ? ' · ⚠' : ''}</div></div></div>`;
+  }).join('');
+}
+function relTxt(rel) { return rel < 50 ? '(denizden)' : rel > 130 ? '(karadan)' : '(yandan)'; }
+
+/* ---------------------- MERA ---------------------- */
+function ensureChartSp() {
+  if (!ui.chartSp || !ui.chartSp.length) {
+    const s = spotById(ui.spot) || model.spots[0], t = Date.now() / 1000;
+    ui.chartSp = spIds().map(id => ({ id, v: seasonVal(model.species[id].season, t, 0) * habitatVal(model.species[id], s) })).sort((a, b) => b.v - a.v).slice(0, 3).map(x => x.id);
+    ui.slots = {};
+  }
+  ui.chartSp = ui.chartSp.filter(id => model.species[id]).slice(0, 4);
+  const used = new Set();
+  for (const id of ui.chartSp) { const sl = ui.slots[id]; if (sl != null && !used.has(sl)) used.add(sl); else delete ui.slots[id]; }
+  for (const id of ui.chartSp) if (ui.slots[id] == null) { for (let k = 0; k < 4; k++) if (!used.has(k)) { ui.slots[id] = k; used.add(k); break; } }
+  for (const id in ui.slots) if (!ui.chartSp.includes(id)) delete ui.slots[id];
+  if (!ui.focusSp || !ui.chartSp.includes(ui.focusSp)) ui.focusSp = ui.chartSp[0];
+}
+function renderMera() {
+  if (!spotById(ui.spot)) ui.spot = model.spots[0].id;
+  ensureChartSp();
+  $('#spotSel').innerHTML = model.spots.map(s => `<option value="${s.id}" ${s.id === ui.spot ? 'selected' : ''}>${esc(s.ad)}${s.bolge === 'bogaz' ? ' (Boğaz)' : ''}</option>`).join('');
+  document.querySelectorAll('#rangeSeg button').forEach(b => b.classList.toggle('on', +b.dataset.r === ui.range));
+  $('#chartChips').innerHTML = spIds().map(id => { const on = ui.chartSp.includes(id); return `<button class="chip ${on ? 'on' : ''}" data-csp="${id}">${on ? `<span class="sw" style="background:${SERIES[ui.slots[id]]}"></span>` : ''}${esc(model.species[id].ad)}</button>`; }).join('');
+  $('#legend').innerHTML = ui.chartSp.map(id => `<span><span class="sw" style="background:${SERIES[ui.slots[id]]}"></span>${esc(model.species[id].ad)}</span>`).join('');
+  const s = spotById(ui.spot), d = state.data[ui.spot];
+  let info = `<div class="kv"><div>Bölge</div><div>${s.bolge === 'bogaz' ? 'Çanakkale Boğazı (akıntı modeli)' : 'Marmara kuzey kıyısı'}</div>
+    <div>Denize bakış</div><div>${s.bakis}° (${compass(s.bakis)}) — rüzgâr bu yönden gelirse kıyıya vurur</div>
+    <div>Zemin</div><div>${s.zemin.map(z => ZEMIN[z] || z).join(', ')} <span class="tag">ön tanım</span></div>`;
+  if (d && d.meta) {
+    const m = d.meta;
+    info += `<div>Deniz modeli</div><div>${m.marOk ? `hücre meraya ${r1(m.cellKm)} km · dalga: ${m.useWave ? 'model' : 'fetch tahmini'} · su sıcaklığı: ${m.useSst ? 'model' : 'aylık ortalama'}` : 'alınamadı' + (m.marErr ? ' (' + esc(m.marErr) + ')' : '') + ' — tahmini değerler kullanılıyor'}</div>`;
+    const t0 = d.H[nowIdx(d.H)].t, p = lp(t0), dayStart = t0 - (p.h * 3600 + p.mi * 60), st = sunTimes(s.lat, s.lon, dayStart);
+    info += `<div>Güneş</div><div>doğuş ${st.rise ? fmtHM(st.rise) : '–'} · batış ${st.set ? fmtHM(st.set) : '–'}</div>`;
+  }
+  info += '</div>';
+  $('#spotInfo').innerHTML = info;
+  drawChart(); renderHour();
+}
+function chartRange() { const d = state.data[ui.spot]; if (!d || !d.H) return null; const i0 = nowIdx(d.H); return { H: d.H, a: Math.max(0, i0 - 6), b: Math.min(d.H.length - 1, i0 + ui.range), now: i0 }; }
+let chartGeom = null;
+function drawChart() {
+  const cv = $('#chart'), wrap = cv.parentElement, r = chartRange();
+  const dpr = window.devicePixelRatio || 1, W = wrap.clientWidth || 340, Hh = 240;
+  cv.width = W * dpr; cv.height = Hh * dpr; const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, Hh);
+  if (!r) { c.fillStyle = '#8f8e86'; c.font = '13px -apple-system,sans-serif'; c.fillText('Veri yok', 12, 30); chartGeom = null; return; }
+  const L = 30, R = 46, T = 10, B = 26, pw = W - L - R, ph = Hh - T - B, n = r.b - r.a;
+  const X = i => L + (i - r.a) / Math.max(1, n) * pw, Y = v => T + (1 - v / 100) * ph;
+  for (let i = r.a; i <= r.b; i++) { const h = r.H[i]; c.fillStyle = h.sunAlt > -6 ? '#232322' : '#161615'; const x0 = X(i - .5 < r.a ? r.a : i - .5), x1 = X(i + .5 > r.b ? r.b : i + .5); c.fillRect(x0, T, x1 - x0 + .5, ph); }
+  c.strokeStyle = '#383835'; c.lineWidth = 1; c.fillStyle = '#8f8e86'; c.font = '11px -apple-system,sans-serif'; c.textAlign = 'right'; c.textBaseline = 'middle';
+  for (const v of [0, 25, 50, 75, 100]) { c.beginPath(); c.moveTo(L, Y(v) + .5); c.lineTo(L + pw, Y(v) + .5); c.globalAlpha = v === 0 ? 1 : .5; c.stroke(); c.globalAlpha = 1; c.fillText(v, L - 5, Y(v)); }
+  c.textAlign = 'center'; c.textBaseline = 'top';
+  const step = n > 72 ? 24 : 6;
+  for (let i = r.a; i <= r.b; i++) { const p = lp(r.H[i].t); if (p.h % step === 0) { const lbl = p.h === 0 ? GUNLER[p.wd] + ' ' + p.d : pad(p.h); c.fillStyle = p.h === 0 ? '#c3c2b7' : '#8f8e86'; c.fillText(lbl, X(i), T + ph + 6); if (p.h === 0) { c.strokeStyle = '#4a4a46'; c.beginPath(); c.moveTo(X(i) + .5, T); c.lineTo(X(i) + .5, T + ph); c.stroke(); } } }
+  c.setLineDash([4, 4]); c.strokeStyle = '#c3c2b7'; c.beginPath(); c.moveTo(X(r.now) + .5, T); c.lineTo(X(r.now) + .5, T + ph); c.stroke(); c.setLineDash([]);
+  const ends = [];
+  for (const id of ui.chartSp) {
+    const a = scoresFor(ui.spot, id); if (!a) continue; c.strokeStyle = SERIES[ui.slots[id]]; c.lineWidth = 2; c.lineJoin = 'round'; c.beginPath();
+    for (let i = r.a; i <= r.b; i++) { const x = X(i), y = Y(a[i]); i === r.a ? c.moveTo(x, y) : c.lineTo(x, y); } c.stroke();
+    ends.push({ id, y: Y(a[r.b]) });
+  }
+  ends.sort((p, q) => p.y - q.y); for (const e of ends) e.y = clamp(e.y, T + 6, T + ph - 6);
+  for (let k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < 13) ends[k].y = ends[k - 1].y + 13;
+  if (ends.length && ends[ends.length - 1].y > T + ph - 6) { ends[ends.length - 1].y = T + ph - 6; for (let k = ends.length - 2; k >= 0; k--) if (ends[k + 1].y - ends[k].y < 13) ends[k].y = ends[k + 1].y - 13; }
+  c.textAlign = 'left'; c.textBaseline = 'middle'; c.font = '11px -apple-system,sans-serif'; c.fillStyle = '#c3c2b7';
+  for (const e of ends) { const nm = model.species[e.id].ad; c.fillText(nm.length > 7 ? nm.slice(0, 6) + '.' : nm, L + pw + 4, e.y); }
+  if (ui.selIdx != null && ui.selIdx >= r.a && ui.selIdx <= r.b) { c.strokeStyle = '#f0efec'; c.lineWidth = 1; c.beginPath(); c.moveTo(X(ui.selIdx) + .5, T); c.lineTo(X(ui.selIdx) + .5, T + ph); c.stroke(); for (const id of ui.chartSp) { const a = scoresFor(ui.spot, id); if (!a) continue; c.fillStyle = SERIES[ui.slots[id]]; c.strokeStyle = '#1a1a19'; c.lineWidth = 2; c.beginPath(); c.arc(X(ui.selIdx), Y(a[ui.selIdx]), 4.5, 0, Math.PI * 2); c.fill(); c.stroke(); } }
+  chartGeom = { r, X, L, pw, n, W, T, ph };
+}
+function idxFromX(clientX) { if (!chartGeom) return null; const rect = $('#chart').getBoundingClientRect(), x = clientX - rect.left, g = chartGeom; return clamp(Math.round(g.r.a + (x - g.L) / g.pw * g.n), g.r.a, g.r.b); }
+function showTip(clientX) {
+  const i = idxFromX(clientX); if (i == null) return; const g = chartGeom, h = g.r.H[i], tip = $('#tip');
+  tip.innerHTML = `<div style="color:#c3c2b7;margin-bottom:3px">${fmtDayHM(h.t)}</div>` + ui.chartSp.map(id => { const a = scoresFor(ui.spot, id); return `<div class="r"><span><span class="sw" style="background:${SERIES[ui.slots[id]]}"></span>${esc(model.species[id].ad)}</span><b>${r0(a[i])}</b></div>`; }).join('');
+  tip.style.display = 'block'; const x = g.X(i), tw = tip.offsetWidth; tip.style.left = clamp(x - tw / 2, 0, g.W - tw) + 'px'; tip.style.top = '2px';
+}
+function renderHour() {
+  const d = state.data[ui.spot], hc = $('#hourCard'), bc = $('#breakCard');
+  if (!d || !d.H) { hc.innerHTML = `<div class="muted">${esc(d ? d.error : 'Veri yok')}</div>`; bc.innerHTML = ''; $('#hourTable').innerHTML = ''; return; }
+  const s = spotById(ui.spot); const i = ui.selIdx != null && ui.selIdx < d.H.length ? ui.selIdx : nowIdx(d.H); const h = d.H[i];
+  const ph = h.sunAlt < -12 ? 'Gece' : h.sunAlt < -.833 ? (h.sunRising ? 'Şafak alacakaranlığı' : 'Akşam alacakaranlığı') : h.sunAlt < 10 ? (h.sunRising ? 'Sabah erken' : 'Akşamüstü') : 'Gündüz';
+  hc.innerHTML = `<div class="row"><div class="h" style="margin:0">${fmtDate(h.t)}</div><div class="muted">${ph}</div></div>
+  <div class="kv sec">
+   <div>Rüzgâr</div><div>${windName(h.D)} (${r0(h.D)}°) ${r0(h.U)} km/sa, hamle ${r0(h.gust)} · ${h.relWind < 50 ? 'denizden kıyıya' : h.relWind > 130 ? 'karadan denize' : 'kıyıya yandan'}</div>
+   <div>Dalga</div><div>${r1(h.hs)} m <span class="tag">${esc(h.hsSrc)}</span>${h.hsModel != null ? ` · açık deniz ${r1(h.hsModel)} m` : ''} · fetch tahmini ${r1(h.hsFetch)} m${h.wavePer != null ? ` · periyot ${r1(h.wavePer)} sn` : ''}</div>
+   <div>Su sıcaklığı</div><div>${r1(h.sst)} °C <span class="tag">${esc(h.sstSrc)}</span></div>
+   <div>Akıntı</div><div>~${r1(h.cur)} km/sa ${esc(h.curDir || '')} <span class="tag">${esc(h.curSrc)}</span>${h.curModel != null ? ` · model hücresi ${r1(h.curModel)} km/sa` : ''}</div>
+   <div>Basınç</div><div>${r0(h.p)} hPa · 3 sa değişim ${h.dp3 == null ? '–' : (h.dp3 > 0 ? '+' : '') + r1(h.dp3)} hPa</div>
+   <div>Bulanıklık</div><div>${r2(h.turb)} (son 48 sa yağış ${r1(h.rain48)} mm)</div>
+   <div>Hava</div><div>${r0(h.temp)} °C · bulut %${r0(h.cloud)}${h.rain ? ` · yağış ${r1(h.rain)} mm` : ''}</div>
+   <div>Ay</div><div>${phaseName(h.phase)} %${r0(h.illum * 100)} · ${h.moonAlt > 0 ? 'ufkun üstünde' : 'ufkun altında'} · solunar ${r2(h.sol)}</div>
+  </div>${h.warn.map(w => `<div class="warn ${w[0]}">⚠ ${esc(w[1])}</div>`).join('')}`;
+  const id = ui.focusSp, sp = model.species[id], e = evalSp(s, id, h);
+  const tabs = ui.chartSp.map(x => `<button class="chip ${x === id ? 'on' : ''}" data-fsp="${x}"><span class="sw" style="background:${SERIES[ui.slots[x]]}"></span>${esc(model.species[x].ad)}</button>`).join('');
+  const vals = { zaman: ph, dalga: r1(h.hs) + ' m', ruzgar: `${r0(h.U)} km/sa ${relTxt(h.relWind)}`, sicaklik: r1(h.sst) + ' °C', akinti: r1(h.cur) + ' km/sa', bulaniklik: r2(h.turb), basinc: h.dp3 == null ? '–' : (h.dp3 > 0 ? '+' : '') + r1(h.dp3) + ' hPa', solunar: r2(h.sol) };
+  const rows = FACTORS.map(F => { const fv = e.f[F.k], wv = e.w[F.k] || 0, used = fv != null && wv > 0; const share = used ? wv / e.sw : 0;
+    return `<tr><td>${F.ad}</td><td>${vals[F.k]}</td><td><div class="bar"><i style="width:${fv == null ? 0 : Math.round(fv * 100)}%"></i></div></td><td class="n">${fv == null ? 'veri yok' : r2(fv)}</td><td class="n">%${r0(share * 100)}</td><td class="n">${used ? r2(share * fv) : '–'}</td></tr>`; }).join('');
+  const sorted = FACTORS.filter(F => e.f[F.k] != null && (e.w[F.k] || 0) > 0).sort((a, b) => e.f[a.k] - e.f[b.k]);
+  const lim = sorted.slice(0, 2).map(F => F.ad.toLowerCase()).join(', ');
+  bc.innerHTML = `<div class="chips">${tabs}</div>
+   <div class="row sec"><div class="h" style="margin:0">${esc(sp.ad)}${sp.grup ? ` <span class="muted">(${esc(sp.grup)})</span>` : ''}</div>${badge(e.score)}</div>
+   <div class="formula">Skor = 100 × <b>${r2(e.season)}</b> mevsim × <b>${r2(e.habitat)}</b> habitat × <b>${r2(e.cond)}</b> koşul × <b>${r2(e.prac)}</b> uygulanabilirlik = <b>${r0(e.score)}</b><br>En düşük koşul faktörleri: ${esc(lim || '–')}</div>
+   <div class="scroll"><table><thead><tr><th>Faktör</th><th>Değer</th><th>Uyum</th><th class="n">0–1</th><th class="n">Ağırlık</th><th class="n">Katkı</th></tr></thead><tbody>${rows}</tbody></table></div>
+   <div class="p sec"><b>Yasal boy:</b> ${sp.minBoy ? sp.minBoy + ' cm' : '—'}${sp.boyNot ? ' · ' + esc(sp.boyNot) : ''} · kg sınırlı türlerde toplam 5 kg</div>
+   <div class="p"><b>Takım / yem:</b> ${esc(sp.takim || '')}</div>`;
+  // tablo
+  const i0 = nowIdx(d.H), i1 = Math.min(d.H.length - 1, i0 + 48);
+  let t = `<table><thead><tr><th>Saat</th><th>Rüzgâr</th><th class="n">Dalga</th><th class="n">Su</th><th class="n">Akıntı</th>${ui.chartSp.map(x => `<th class="n">${esc(model.species[x].ad)}</th>`).join('')}</tr></thead><tbody>`;
+  for (let k = i0; k <= i1; k++) { const q = d.H[k]; t += `<tr><td>${fmtDayHM(q.t)}</td><td>${compass(q.D)} ${r0(q.U)}</td><td class="n">${r1(q.hs)}</td><td class="n">${r1(q.sst)}</td><td class="n">${r1(q.cur)}</td>${ui.chartSp.map(x => `<td class="n">${r0(scoresFor(ui.spot, x)[k])}</td>`).join('')}</tr>`; }
+  $('#hourTable').innerHTML = t + '</tbody></table>';
+}
+
+/* ---------------------- GÜNLÜK ---------------------- */
+let logs = lsGet(LS.log) || [];
+function saveLogs() { lsSet(LS.log, logs); }
+function toLocalInput(ms) { const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function renderLogForm() {
+  if (!$('#lgTime').value) $('#lgTime').value = toLocalInput(Date.now());
+  const cs = $('#lgSpot').value, cp = $('#lgSp').value;
+  $('#lgSpot').innerHTML = model.spots.map(s => `<option value="${s.id}">${esc(s.ad)}</option>`).join('');
+  $('#lgSp').innerHTML = spIds().map(id => `<option value="${id}">${esc(model.species[id].ad)}</option>`).join('');
+  $('#lgSpot').value = spotById(cs) ? cs : ui.spot; if (model.species[cp]) $('#lgSp').value = cp;
+}
+async function snapshotFor(spotId, spId, t) {
+  const spot = spotById(spotId); let d = state.data[spotId];
+  const inRange = d && d.H && t >= d.H[0].t - 1800 && t <= d.H[d.H.length - 1].t + 1800;
+  if (!inRange) {
+    const daysAgo = Math.ceil((Date.now() / 1000 - t) / 86400) + 2;
+    if (daysAgo > 92 || t > Date.now() / 1000 + 7 * 86400) return null;
+    const past = Math.max(2, daysAgo);
+    const [w] = await fetchMulti(WX_URL, WX_P(past, 1), [[spot.lat, spot.lon]]);
+    const [m] = await fetchMulti(MAR_URL, MAR_P(past, 1), [marinePoint(spot)]);
+    if (!w || w.error) return null; d = buildHours(spot, w, m);
+  }
+  let bi = 0, bd = 1e12; d.H.forEach((h, k) => { const dd = Math.abs(h.t - t); if (dd < bd) { bd = dd; bi = k; } });
+  const h = d.H[bi], e = evalSp(spot, spId, h);
+  return { score: e.score, f: e.f, season: e.season, habitat: e.habitat, cond: e.cond, prac: e.prac, U: h.U, D: h.D, hs: h.hs, sst: h.sst, cur: h.cur, turb: h.turb, dp3: h.dp3 };
+}
+async function saveLog() {
+  const tv = $('#lgTime').value; if (!tv) { toast('Tarih-saat gir'); return; }
+  const t = Math.round(new Date(tv).getTime() / 1000), spotId = $('#lgSpot').value, spId = $('#lgSp').value;
+  const count = Math.max(0, parseInt($('#lgCount').value || '0', 10) || 0);
+  const sizes = $('#lgSizes').value.split(/[,;\s]+/).map(x => parseFloat(x.replace(',', '.'))).filter(x => isFinite(x) && x > 0);
+  const sp = model.species[spId];
+  const under = sp.minBoy ? sizes.filter(x => x < sp.minBoy) : [];
+  $('#lgSave').disabled = true; $('#lgMsg').innerHTML = '<span class="spin"></span>Koşullar ekleniyor…';
+  let snap = null; try { snap = await snapshotFor(spotId, spId, t); } catch (e) { snap = null; }
+  logs.push({ id: Date.now().toString(36), t, spotId, spId, count, sizes, tech: $('#lgTech').value, bait: $('#lgBait').value.trim(), note: $('#lgNote').value.trim(), snap, v: APP_VER });
+  logs.sort((a, b) => b.t - a.t); saveLogs();
+  $('#lgSave').disabled = false; $('#lgMsg').textContent = snap ? 'Kaydedildi (koşullar eklendi).' : 'Kaydedildi (koşul verisi alınamadı).';
+  if (under.length) toast(`${under.join(', ')} cm yasal boyun (${sp.minBoy} cm) altında — suya iade`, 4500);
+  $('#lgCount').value = 0; $('#lgSizes').value = ''; $('#lgNote').value = '';
+  renderLogs();
+}
+function renderLogs() {
+  $('#lgList').innerHTML = logs.length ? logs.slice(0, 60).map(l => {
+    const s = spotById(l.spotId), sp = model.species[l.spId];
+    return `<div class="item" style="cursor:default"><div class="main"><div class="t">${esc(sp ? sp.ad : l.spId)} · ${esc(s ? s.ad : l.spotId)} · ${l.count ? l.count + ' adet' : 'boş'}</div><div class="s">${fmtDate(l.t)}${l.sizes && l.sizes.length ? ' · ' + l.sizes.join(', ') + ' cm' : ''} · ${esc(l.tech)}${l.bait ? ' · ' + esc(l.bait) : ''}${l.note ? ' · ' + esc(l.note) : ''}${l.snap ? ` · skor ${r0(l.snap.score)}` : ' · koşul yok'}</div></div><button class="btn sm" data-del="${l.id}">Sil</button></div>`;
+  }).join('') + (logs.length > 60 ? `<div class="muted sec">+${logs.length - 60} eski kayıt (dışa aktarımda hepsi var)</div>` : '') : '<div class="muted">Henüz kayıt yok.</div>';
+  renderCalib();
+}
+function calibFor(spId) {
+  const E = logs.filter(l => l.spId === spId && l.snap && l.snap.f);
+  const S = E.filter(l => l.count > 0), Bk = E.filter(l => !l.count);
+  const mean = (arr, fn) => { const v = arr.map(fn).filter(x => x != null && isFinite(x)); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+  const w0 = weightsFor(spId), rows = [];
+  let tot = 0; const sug = {};
+  for (const F of FACTORS) {
+    const ms = mean(S, l => l.snap.f[F.k]), mb = mean(Bk, l => l.snap.f[F.k]);
+    const diff = ms != null && mb != null ? ms - mb : null;
+    const w = (w0[F.k] || 0) * (diff == null ? 1 : clamp(1 + 2 * diff, .3, 2.5)); sug[F.k] = w; tot += w;
+    rows.push({ F, ms, mb, diff });
+  }
+  for (const k in sug) sug[k] = tot ? sug[k] / tot : 0;
+  return { nS: S.length, nB: Bk.length, sS: mean(S, l => l.snap.score), sB: mean(Bk, l => l.snap.score), rows, sug, w0, ok: S.length >= 5 && Bk.length >= 3 };
+}
+function renderCalib() {
+  const ids = spIds().filter(id => logs.some(l => l.spId === id && l.snap));
+  if (!ids.length) { $('#calib').innerHTML = '<div class="muted">Kalibrasyon için kayıt gerekli. Bir tür için en az 5 başarılı ve 3 boş seans olunca önerilen ağırlıklar açılır.</div>'; return; }
+  $('#calib').innerHTML = ids.map(id => {
+    const c = calibFor(id), sp = model.species[id];
+    return `<details class="sec"><summary><b>${esc(sp.ad)}</b> — başarılı ${c.nS}, boş ${c.nB} · ort. skor ${r0(c.sS)} / ${r0(c.sB)}</summary>
+     <div class="scroll sec"><table><thead><tr><th>Faktör</th><th class="n">Başarılı ort.</th><th class="n">Boş ort.</th><th class="n">Fark</th><th class="n">Mevcut</th><th class="n">Önerilen</th></tr></thead><tbody>
+     ${c.rows.map(r => `<tr><td>${r.F.ad}</td><td class="n">${r2(r.ms)}</td><td class="n">${r2(r.mb)}</td><td class="n">${r.diff == null ? '–' : (r.diff > 0 ? '+' : '') + r2(r.diff)}</td><td class="n">%${r0((c.w0[r.F.k] || 0) / Object.values(c.w0).reduce((a, b) => a + b, 0) * 100)}</td><td class="n">%${r0(c.sug[r.F.k] * 100)}</td></tr>`).join('')}
+     </tbody></table></div>
+     <div class="muted">Önerilen = mevcut × (1 + 2 × fark), sonra normalize. Başarılı seanslarda belirgin yüksek çıkan faktörün ağırlığı artar.</div>
+     <div class="row sec"><span class="muted">${c.ok ? '' : 'Uygulamak için en az 5 başarılı + 3 boş seans gerekli.'}</span><button class="btn sm" data-capply="${id}" ${c.ok ? '' : 'disabled'}>${esc(sp.ad)} için uygula</button></div></details>`;
+  }).join('');
+}
+async function exportLogs() {
+  const text = JSON.stringify({ app: 'engin-balik-tut', v: APP_VER, exported: new Date().toISOString(), logs, model }, null, 1);
+  const name = 'balik-gunlugu-' + new Date().toISOString().slice(0, 10) + '.json';
+  try { const file = new File([text], name, { type: 'application/json' }); if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Balık günlüğü' }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+function importLogs(file) {
+  const rd = new FileReader();
+  rd.onload = () => { try { const j = JSON.parse(rd.result); const arr = Array.isArray(j) ? j : j.logs; if (!Array.isArray(arr)) throw new Error('günlük bulunamadı'); const have = new Set(logs.map(l => l.id)); let n = 0; for (const l of arr) if (l && l.id && l.t && !have.has(l.id)) { logs.push(l); n++; } logs.sort((a, b) => b.t - a.t); saveLogs(); renderLogs(); toast(n + ' kayıt eklendi'); } catch (e) { toast('İçe alınamadı: ' + e.message); } };
+  rd.readAsText(file);
+}
+
+/* ---------------------- MODEL sekmesi ---------------------- */
+let wScope = 'genel';
+function renderModelTab() {
+  const ws = model.weights, tot = Object.values(ws).reduce((a, b) => a + b, 0) || 1;
+  const spw = Object.keys(model.speciesWeights || {});
+  $('#wScope').textContent = spw.length ? 'genel · ' + spw.length + ' türde özel ağırlık' : 'genel';
+  $('#wEdit').innerHTML = FACTORS.map(F => `<label class="f">${F.ad} — <b style="color:#f0efec" data-wp="${F.k}">%${r0(ws[F.k] / tot * 100)}</b> <span class="muted">· ${F.acik}</span></label><input type="range" min="0" max="40" step="1" value="${Math.round(ws[F.k] * 100)}" data-w="${F.k}">`).join('');
+  $('#spEditSel').innerHTML = spIds().map(id => `<option value="${id}">${esc(model.species[id].ad)}</option>`).join('');
+  if (renderModelTab.sp && model.species[renderModelTab.sp]) $('#spEditSel').value = renderModelTab.sp;
+  renderSpEdit();
+  $('#stEditSel').innerHTML = model.spots.map(s => `<option value="${s.id}">${esc(s.ad)}</option>`).join('') + '<option value="__new">+ Yeni mera ekle</option>';
+  if (renderModelTab.st && (spotById(renderModelTab.st) || renderModelTab.st === '__new')) $('#stEditSel').value = renderModelTab.st;
+  renderStEdit();
+  renderMethod();
+}
+function numInputs(arr, key, cls, labels) { return `<div class="${cls}">${arr.map((v, i) => `<div>${labels ? `<div class="muted" style="font-size:10.5px;text-align:center">${esc(labels[i])}</div>` : ''}<input type="number" step="any" inputmode="decimal" data-k="${key}" data-i="${i}" value="${v}"></div>`).join('')}</div>`; }
+const TRAP_L = ['alt sıfır', 'uygun başı', 'uygun sonu', 'üst sıfır'];
+function renderSpEdit() {
+  const id = $('#spEditSel').value || spIds()[0]; renderModelTab.sp = id; const sp = model.species[id];
+  $('#spEdit').innerHTML = `<div class="muted">${esc(sp.latin || '')}${sp.grup ? ' · ' + esc(sp.grup) : ''}</div>
+   <label class="f">Mevsim (0–1, ay ortası değerleri)</label>${numInputs(sp.season, 'season', 'grid6', AYLAR)}
+   <label class="f">Su sıcaklığı trapezi (°C)</label>${numInputs(sp.sst, 'sst', 'grid4', TRAP_L)}
+   <label class="f">Dalga trapezi (m)</label>${numInputs(sp.wave, 'wave', 'grid4', TRAP_L)}
+   <label class="f">Akıntı trapezi (km/sa)</label>${numInputs(sp.current, 'current', 'grid4', TRAP_L)}
+   <label class="f">Bulanıklık trapezi (0–1)</label>${numInputs(sp.clarity, 'clarity', 'grid4', TRAP_L)}
+   <label class="f">Saat uyumu (0–1)</label>${numInputs([sp.tod.gece, sp.tod.safak, sp.tod.aksam, sp.tod.gunduz], 'tod', 'grid4', ['gece', 'şafak', 'akşam', 'gündüz'])}
+   <label class="f">Habitat uyumu (0–1)</label>${numInputs(Object.keys(ZEMIN).map(z => sp.habitat[z] ?? 0), 'habitat', 'grid4', Object.keys(ZEMIN).map(z => ZEMIN[z].split('/')[0]))}
+   <div class="grid2"><div><label class="f">Sakin hava uyumu (0–1)</label><input type="number" step="any" data-k="calm" value="${sp.wind.calm}"></div><div><label class="f">Kıyıya rüzgâr tercihi (−1…1)</label><input type="number" step="any" data-k="onshore" value="${sp.wind.onshoreLike}"></div></div>
+   <div class="grid2"><div><label class="f">Gündüz bulanıklık bonusu</label><input type="number" step="any" data-k="dtb" value="${sp.dayTurbBoost || 0}"></div><div><label class="f">Boğaz mevsim gecikmesi (gün)</label><input type="number" step="1" data-k="shift" value="${sp.bogazShift || 0}"></div></div>
+   <div class="grid2"><div><label class="f">Basınç tepkisi</label><select data-k="pres"><option value="avci" ${sp.pressure === 'avci' ? 'selected' : ''}>avcı (düşüşü sever)</option><option value="sabit" ${sp.pressure === 'sabit' ? 'selected' : ''}>sabit basınç</option></select></div><div><label class="f">Yasal boy (cm)</label><input type="number" step="any" data-k="minBoy" value="${sp.minBoy ?? ''}"></div></div>
+   <label class="f">Takım / yem notu</label><input type="text" data-k="takim" value="${esc(sp.takim || '')}">
+   <div class="row sec"><button class="btn sm" id="spDef">Bu türü varsayılana döndür</button><button class="btn pri sm" id="spSave">Kaydet</button></div>`;
+}
+function saveSpEdit() {
+  const id = renderModelTab.sp, sp = model.species[id], box = $('#spEdit'); const num = el => { const v = parseFloat(String(el.value).replace(',', '.')); return isFinite(v) ? v : null; };
+  const arr = k => [...box.querySelectorAll(`input[data-k="${k}"]`)].map(num);
+  for (const k of ['season', 'sst', 'wave', 'current', 'clarity']) { const a = arr(k); if (a.some(v => v == null)) { toast('Eksik sayı: ' + k); return; } sp[k] = a; }
+  const td = arr('tod'); if (td.some(v => v == null)) { toast('Saat uyumu eksik'); return; } sp.tod = { gece: td[0], safak: td[1], aksam: td[2], gunduz: td[3] };
+  const hb = arr('habitat'); Object.keys(ZEMIN).forEach((z, i) => sp.habitat[z] = hb[i] ?? 0);
+  const one = k => num(box.querySelector(`[data-k="${k}"]`));
+  sp.wind = { calm: one('calm') ?? sp.wind.calm, onshoreLike: one('onshore') ?? sp.wind.onshoreLike };
+  sp.dayTurbBoost = one('dtb') ?? 0; sp.bogazShift = one('shift') ?? 0; sp.minBoy = one('minBoy');
+  sp.pressure = box.querySelector('[data-k="pres"]').value; sp.takim = box.querySelector('[data-k="takim"]').value;
+  saveModel(); renderAll(); toast(sp.ad + ' kaydedildi');
+}
+function renderStEdit() {
+  const id = $('#stEditSel').value; renderModelTab.st = id; const isNew = id === '__new';
+  const s = isNew ? { id: '', ad: '', lat: '', lon: '', bolge: 'marmara', bakis: 180, zemin: ['kum'], fetch: [0, 0, 20, 40, 40, 30, 10, 0], akintiBaz: 3 } : spotById(id);
+  if (!s) { $('#stEdit').innerHTML = ''; return; }
+  $('#stEdit').innerHTML = `<div class="grid2"><div><label class="f">Ad</label><input type="text" data-k="ad" value="${esc(s.ad)}"></div><div><label class="f">Bölge</label><select data-k="bolge"><option value="marmara" ${s.bolge === 'marmara' ? 'selected' : ''}>Marmara</option><option value="bogaz" ${s.bolge === 'bogaz' ? 'selected' : ''}>Boğaz</option></select></div></div>
+   <div class="grid2"><div><label class="f">Enlem</label><input type="number" step="any" data-k="lat" value="${s.lat}"></div><div><label class="f">Boylam</label><input type="number" step="any" data-k="lon" value="${s.lon}"></div></div>
+   <button class="btn sm sec" id="stGeo">Konumumu al</button>
+   <div class="grid2"><div><label class="f">Denize bakış yönü (°)</label><input type="number" step="1" data-k="bakis" value="${s.bakis}"></div><div><label class="f">Boğaz akıntı tabanı (km/sa)</label><input type="number" step="any" data-k="akintiBaz" value="${s.akintiBaz ?? ''}"></div></div>
+   <label class="f">Zemin</label><div class="chips">${Object.keys(ZEMIN).map(z => `<label class="chip"><input type="checkbox" data-z="${z}" ${s.zemin.includes(z) ? 'checked' : ''}> ${ZEMIN[z]}</label>`).join('')}</div>
+   <label class="f">Fetch (km) — rüzgârın geldiği yön</label>${numInputs(s.fetch, 'fetch', 'grid4', ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB'])}
+   <div class="muted sec">Bakış yönü: kıyıda denize dönünce pusulanın gösterdiği derece. Fetch: o yönden esen rüzgârın deniz üzerinde aldığı yol.</div>
+   <div class="row sec">${isNew ? '<span></span>' : '<button class="btn sm" id="stDel">Merayı sil</button>'}<button class="btn pri sm" id="stSave">${isNew ? 'Ekle' : 'Kaydet'}</button></div>`;
+}
+function saveStEdit() {
+  const id = renderModelTab.st, isNew = id === '__new', box = $('#stEdit'), num = k => { const v = parseFloat(String(box.querySelector(`[data-k="${k}"]`).value).replace(',', '.')); return isFinite(v) ? v : null; };
+  const ad = box.querySelector('[data-k="ad"]').value.trim(), lat = num('lat'), lon = num('lon'), bakis = num('bakis');
+  if (!ad || lat == null || lon == null || bakis == null) { toast('Ad, enlem, boylam ve bakış gerekli'); return; }
+  const fetch = [...box.querySelectorAll('input[data-k="fetch"]')].map(el => { const v = parseFloat(el.value); return isFinite(v) ? v : 0; });
+  const zemin = [...box.querySelectorAll('input[data-z]')].filter(el => el.checked).map(el => el.dataset.z);
+  const o = { ad, lat, lon, bakis: ((bakis % 360) + 360) % 360, bolge: box.querySelector('[data-k="bolge"]').value, zemin: zemin.length ? zemin : ['karisik'], fetch };
+  const ab = num('akintiBaz'); if (o.bolge === 'bogaz') o.akintiBaz = ab ?? 3;
+  if (isNew) { o.id = 'm' + Date.now().toString(36); model.spots.push(o); renderModelTab.st = o.id; }
+  else { const s = spotById(id); const moved = s.lat !== lat || s.lon !== lon; Object.assign(s, o); if (moved) delete s.marinePt; if (o.bolge !== 'bogaz') delete s.akintiBaz; }
+  saveModel(); toast('Mera kaydedildi, veri yenileniyor'); renderModelTab(); loadAll(true);
+}
+
+function renderMethod() {
+  $('#methodCard').innerHTML = `<div class="h">Yöntem</div>
+  <div class="p"><b>Skor</b> = 100 × <b>Mevsim</b> × <b>Habitat</b> × <b>Koşul uyumu</b> × <b>Uygulanabilirlik</b>. Mevsim ve habitat balığın orada olma olasılığını, koşul uyumu o saatin uygunluğunu, uygulanabilirlik kıyıdan avın güvenli ve yapılabilir olup olmadığını temsil eder. Her çarpan Mera sekmesinde ayrı ayrı gösterilir.</div>
+  <div class="p"><b>Koşul uyumu</b>: 8 faktörün ağırlıklı ortalaması. Her faktör tür için tanımlı bir trapez veya eğriyle 0–1 arasına çevrilir; tüm eğriler yukarıda düzenlenebilir.</div>
+  <div class="p"><b>Dalga</b>: Deniz modeli hücresi meraya yakınsa (Marmara ≤15 km, Boğaz ≤6 km) model dalgası kullanılır; dalga karadan geliyorsa kıyı için azaltılır. Değilse JONSWAP fetch-sınırlı tahmin: Hs = 0,0016·U·√(F/g), üst sınır 0,0214·U², sönüm 0,8/sa.</div>
+  <div class="p"><b>Akıntı</b>: Boğaz meralarında model hücresi boğazı çözemediği için yüzey akıntısı = taban × (1 + 0,6 × rüzgârın boğaz ekseni bileşeni / 30). Poyraz hızlandırır, kuvvetli lodos yavaşlatır veya tersine çevirir. Marmara'da model akıntısı, yoksa rüzgâr hızının %2,5'i.</div>
+  <div class="p"><b>Bulanıklık</b> = 0,35·(48 sa yağış / 20 mm; dere ağzında 12 mm) + 0,45·(24 sa en büyük dalga / 1,4 m) + 0,20·(son 6 sa kıyıya rüzgâr). Ölçüm değil, endekstir.</div>
+  <div class="p"><b>Gelgit yerine</b>: Marmara ve Boğaz'da gelgit genliği çok küçüktür; bu yüzden NOAA tipi gelgit yerine akıntı ve rüzgâr kullanılır.</div>
+  <div class="p"><b>Güneş ve ay</b>: SunCalc algoritmasıyla cihazda hesaplanır. Solunar: ay üst/alt geçişi ±60 dk = 1, ay doğuş/batışı ±40 dk = 0,75, diğer saatler 0,35.</div>
+  <div class="p"><b>Veri</b>: Open-Meteo Forecast (rüzgâr, hamle, basınç, yağış) ve Marine API (dalga, su sıcaklığı, akıntı; ~8 km çözünürlük, kıyıda doğruluk sınırlı). Su sıcaklığı yoksa Marmara aylık ortalaması kullanılır.</div>
+  <div class="p"><b>Ön tanımlar</b>: Mera koordinatı, bakış, zemin, fetch ve tür eğrileri başlangıç değerleridir. Av günlüğü ve kalibrasyon bunları senin verinle düzeltmek içindir.</div>
+  <div class="muted">Sürüm ${APP_VER}</div>`;
+  $('#legalCard').innerHTML = `<div class="h">Mevzuat özeti (amatör, deniz)</div>
+  <table><thead><tr><th>Tür</th><th class="n">Asgari boy</th></tr></thead><tbody>
+  ${spIds().map(id => { const sp = model.species[id]; return `<tr><td>${esc(sp.ad)}${sp.grup ? ' <span class="muted">(' + esc(sp.grup) + ')</span>' : ''}</td><td class="n">${sp.minBoy ? sp.minBoy + ' cm' : '—'}</td></tr>`; }).join('')}
+  </tbody></table>
+  <div class="p">Kg ile sınırlı türlerde kişi başı toplam <b>5 kg</b> (türler ayrı ayrı değil, toplam). Tek balık 5 kg'ı aşarsa yasal sayılır. Boy sınırı altındaki balık suya iade edilir.</div>
+  <div class="muted">Kaynak: 6/2 Numaralı Amatör Amaçlı Su Ürünleri Avcılığının Düzenlenmesi Hakkında Tebliğ (2024/21), RG 11.08.2024/32629, geçerlilik 1.9.2024–31.8.2028; değişiklikler 2025/12 ve 2026/26. Boy değerleri ikincil kaynaklardan derlenmiştir. Mırmır ve zargana için boy sınırı kaynaklarda bulunamadı. Bölgesel yasak alanlar (liman, askeri bölge vb.) için il müdürlüğü duyurularına bak.</div>`;
+}
+
+/* ---------------------- Genel render ve olaylar ---------------------- */
+function renderAll() {
+  renderChips(); renderNow();
+  if (ui.tab === 'mera') renderMera();
+  renderLogForm(); renderLogs();
+  if (ui.tab === 'model') renderModelTab();
+}
+function setTab(t) {
+  ui.tab = t; saveUi();
+  document.querySelectorAll('.tab').forEach(s => s.classList.toggle('active', s.id === 'tab-' + t));
+  document.querySelectorAll('.tabbar button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  if (t === 'mera') renderMera(); if (t === 'model') renderModelTab(); if (t === 'gunluk') { renderLogForm(); renderLogs(); }
+  window.scrollTo(0, 0);
+}
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-tab],[data-sp],[data-go],[data-csp],[data-fsp],[data-r],[data-del],[data-capply],#btnRefresh,#lgSave,#lgExport,#wReset,#wClearSp,#spSave,#spDef,#stSave,#stDel,#stGeo,#mjLoad,#mjApply,#mjReset');
+  if (!el) return; const d = el.dataset;
+  if (d.tab) return setTab(d.tab);
+  if (d.sp) { const i = ui.targets.indexOf(d.sp); if (i >= 0) { if (ui.targets.length > 1) ui.targets.splice(i, 1); } else ui.targets.push(d.sp); saveUi(); renderChips(); renderNow(); return; }
+  if (d.go) { ensureChartSp(); ui.spot = d.go; if (d.gsp) { if (!ui.chartSp.includes(d.gsp)) { ui.chartSp.unshift(d.gsp); if (ui.chartSp.length > 4) ui.chartSp.pop(); } ui.focusSp = d.gsp; } ui.selIdx = d.gi != null ? +d.gi : null; saveUi(); return setTab('mera'); }
+  if (d.csp) { const i = ui.chartSp.indexOf(d.csp); if (i >= 0) { if (ui.chartSp.length > 1) ui.chartSp.splice(i, 1); } else { if (ui.chartSp.length >= 4) { toast('En fazla 4 tür — önce birini kaldır'); return; } ui.chartSp.push(d.csp); } saveUi(); renderMera(); return; }
+  if (d.fsp) { ui.focusSp = d.fsp; renderHour(); return; }
+  if (d.r) { ui.range = +d.r; saveUi(); renderMera(); return; }
+  if (d.del) { logs = logs.filter(l => l.id !== d.del); saveLogs(); renderLogs(); toast('Kayıt silindi'); return; }
+  if (d.capply) { const c = calibFor(d.capply); if (!c.ok) return; model.speciesWeights = model.speciesWeights || {}; model.speciesWeights[d.capply] = c.sug; saveModel(); renderAll(); toast(model.species[d.capply].ad + ' için ağırlıklar güncellendi'); return; }
+  switch (el.id) {
+    case 'btnRefresh': loadAll(true); break;
+    case 'lgSave': saveLog(); break;
+    case 'lgExport': exportLogs(); break;
+    case 'wReset': model.weights = deepCopy(DEFAULT_MODEL.weights); saveModel(); renderAll(); renderModelTab(); break;
+    case 'wClearSp': model.speciesWeights = {}; saveModel(); renderAll(); renderModelTab(); toast('Tür bazlı ağırlıklar silindi'); break;
+    case 'spSave': saveSpEdit(); break;
+    case 'spDef': { const id = renderModelTab.sp; if (DEFAULT_MODEL.species[id]) { model.species[id] = deepCopy(DEFAULT_MODEL.species[id]); saveModel(); renderAll(); renderSpEdit(); toast('Varsayılana döndü'); } break; }
+    case 'stSave': saveStEdit(); break;
+    case 'stDel': { if (model.spots.length <= 1) return; const id = renderModelTab.st; model.spots = model.spots.filter(s => s.id !== id); renderModelTab.st = model.spots[0].id; saveModel(); renderModelTab(); loadAll(true); toast('Mera silindi'); break; }
+    case 'stGeo': if (!navigator.geolocation) { toast('Konum desteklenmiyor'); break; } navigator.geolocation.getCurrentPosition(p => { const b = $('#stEdit'); b.querySelector('[data-k="lat"]').value = p.coords.latitude.toFixed(5); b.querySelector('[data-k="lon"]').value = p.coords.longitude.toFixed(5); toast('Konum alındı (±' + Math.round(p.coords.accuracy) + ' m)'); }, err => toast('Konum alınamadı: ' + err.message), { enableHighAccuracy: true, timeout: 15000 }); break;
+    case 'mjLoad': $('#modelJson').value = JSON.stringify(model, null, 1); break;
+    case 'mjApply': try { const m = JSON.parse($('#modelJson').value); if (!m.species || !m.spots || !m.weights) throw new Error('species/spots/weights eksik'); m.version = DEFAULT_MODEL.version; model = m; saveModel(); renderAll(); renderModelTab(); loadAll(true); toast('Model uygulandı'); } catch (err) { toast('JSON hatası: ' + err.message); } break;
+    case 'mjReset': model = deepCopy(DEFAULT_MODEL); saveModel(); ui.chartSp = null; renderAll(); renderModelTab(); loadAll(true); toast('Model varsayılana döndü'); break;
+  }
+});
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.dataset && el.dataset.w) {
+    model.weights[el.dataset.w] = (+el.value) / 100; saveModel();
+    const tot = Object.values(model.weights).reduce((a, b) => a + b, 0) || 1;
+    document.querySelectorAll('[data-wp]').forEach(b => b.textContent = '%' + r0(model.weights[b.dataset.wp] / tot * 100));
+    clearTimeout(window.__wt); window.__wt = setTimeout(() => { renderNow(); }, 300);
+  }
+});
+$('#spotSel').addEventListener('change', e => { ui.spot = e.target.value; ui.selIdx = null; saveUi(); renderMera(); });
+$('#spEditSel').addEventListener('change', renderSpEdit);
+$('#stEditSel').addEventListener('change', renderStEdit);
+$('#lgImport').addEventListener('change', e => { if (e.target.files[0]) importLogs(e.target.files[0]); e.target.value = ''; });
+const cv = $('#chart');
+cv.addEventListener('pointermove', e => showTip(e.clientX));
+cv.addEventListener('pointerleave', () => { $('#tip').style.display = 'none'; });
+cv.addEventListener('pointerdown', e => showTip(e.clientX));
+cv.addEventListener('click', e => { const i = idxFromX(e.clientX); if (i == null) return; ui.selIdx = i; drawChart(); renderHour(); showTip(e.clientX); });
+let rsT; window.addEventListener('resize', () => { clearTimeout(rsT); rsT = setTimeout(() => { if (ui.tab === 'mera') drawChart(); }, 150); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && state.at && Date.now() - state.at > CACHE_MAX_AGE) loadAll(false); });
+
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => { });
+setTab(ui.tab || 'simdi');
+renderAll();
+loadAll(false);
+</script>
+</body>
+</html>
